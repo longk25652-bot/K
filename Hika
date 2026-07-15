@@ -1,5 +1,5 @@
 -- =================================================================
---                   HIKAS - PRIVATE EDITION v1.9 (FULL)
+--         HIKAS - PRIVATE EDITION v1.9 (CLEANED ORIGINAL)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -12,7 +12,7 @@ if game:GetService("CoreGui"):FindFirstChild("HikasMenu") then
     game:GetService("CoreGui").HikasMenu:Destroy()
 end
 
--- 1. GIAO DIỆN CHÍNH
+-- 1. GIAO DIỆN CHÍNH (Giữ nguyên gốc v1.9)
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "HikasMenu"
 ScreenGui.ResetOnSpawn = false
@@ -67,36 +67,9 @@ local function CreateToggle(name, callback)
     end)
 end
 
--- ==================== TÍNH NĂNG ====================
+-- ==================== TÍNH NĂNG NỀN V1.9 GỐC ====================
 
--- 1. ESP PHÂN BIỆT TỐT/XẤU
-local ESPEnabled = false
-local function IsBadEntity(char)
-    local name = string.lower(char.Name)
-    -- CHỈNH SỬA CÁC TỪ KHOÁ Ở ĐÂY NẾU GAME ĐỔI TÊN
-    local badKeywords = {"fake", "impostor", "bad", "infected", "monster", "thief", "killer"}
-    for _, v in pairs(badKeywords) do if string.find(name, v) then return true end end
-    return false
-end
-
-RunService.RenderStepped:Connect(function()
-    if ESPEnabled then
-        for _, v in pairs(workspace:GetDescendants()) do
-            if v:IsA("Model") and v:FindFirstChild("Humanoid") and v ~= LocalPlayer.Character then
-                if not v:FindFirstChild("HikasESP") then
-                    local h = Instance.new("Highlight", v); h.Name = "HikasESP"
-                    h.FillColor = IsBadEntity(v) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
-                    h.FillTransparency = 0.5
-                end
-            end
-        end
-    else
-        for _, v in pairs(workspace:GetDescendants()) do if v.Name == "HikasESP" then v:Destroy() end end
-    end
-end)
-CreateToggle("ESP Good/Bad", function(s) ESPEnabled = s end)
-
--- 2. NOCLIP
+-- 1. NOCLIP (Giữ nguyên cấu trúc v1.9 gốc)
 local NoclipEnabled = false
 local NoclipConn
 CreateToggle("Noclip", function(s) 
@@ -106,7 +79,7 @@ CreateToggle("Noclip", function(s)
     elseif NoclipConn then NoclipConn:Disconnect() end
 end)
 
--- 3. INSTANT INTERACT
+-- 2. INSTANT INTERACT (Giữ nguyên cấu trúc v1.9 gốc)
 local InstantEnabled = false
 local IntConn
 CreateToggle("Instant Interact", function(s)
@@ -117,22 +90,13 @@ CreateToggle("Instant Interact", function(s)
     elseif IntConn then IntConn:Disconnect() end
 end)
 
--- 4. SUPER JUMP
+-- 3. SUPER JUMP (Giữ nguyên cấu trúc v1.9 gốc)
 CreateToggle("Super Jump", function(s)
     local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if h then h.JumpPower = s and 100 or 50 end
 end)
 
--- 5. NPC FAST MOVE
-local NPCSpeed = 30
-CreateToggle("NPC Fast Move", function(s)
-    if s then
-        for _, v in pairs(workspace:GetDescendants()) do if v:IsA("Humanoid") and v.Parent ~= LocalPlayer.Character then v.WalkSpeed = NPCSpeed end end
-        workspace.DescendantAdded:Connect(function(v) if v:IsA("Humanoid") and v.Parent ~= LocalPlayer.Character then v.WalkSpeed = NPCSpeed end end)
-    end
-end)
-
--- 6. WALK SPEED INPUT
+-- 4. WALK SPEED INPUT (Giữ nguyên cấu trúc v1.9 gốc)
 local SpeedFrame = Instance.new("Frame", Container); SpeedFrame.Size = UDim2.new(1, -10, 0, 50); SpeedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 Instance.new("UICorner", SpeedFrame).CornerRadius = UDim.new(0, 8)
 local SpeedLbl = Instance.new("TextLabel", SpeedFrame); SpeedLbl.Text = "WalkSpeed:"; SpeedLbl.Size = UDim2.new(0.5, 0, 1, 0); SpeedLbl.Position = UDim2.new(0, 12, 0, 0); SpeedLbl.BackgroundTransparency = 1; SpeedLbl.TextColor3 = Color3.new(1,1,1)
