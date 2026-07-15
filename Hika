@@ -1,5 +1,5 @@
 -- =================================================================
---                   HIKAS - PRIVATE EDITION v1.9 (FULL)
+--      HIKAS - PRIVATE EDITION v2.0 (Xây dựng trên nền v1.9 chuẩn)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -12,14 +12,14 @@ if game:GetService("CoreGui"):FindFirstChild("HikasMenu") then
     game:GetService("CoreGui").HikasMenu:Destroy()
 end
 
--- 1. GIAO DIỆN CHÍNH
+-- 1. GIAO DIỆN CHÍNH (Sử dụng cấu trúc chạy mượt của v1.9)
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "HikasMenu"
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 330, 0, 480)
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -240)
+MainFrame.Size = UDim2.new(0, 330, 0, 500) -- Tăng nhẹ chiều cao để chứa thuốc
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -250)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -32,7 +32,7 @@ local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Size = UDim2.new(1, 0, 0, 45); TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS 👑"
+Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS v2.0 👑"
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0.5, -15); CloseBtn.Text = "✕"; CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
@@ -48,15 +48,16 @@ MinimizeBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; Open
 OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; OpenBtn.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- Container
+-- Container cuộn
 local Container = Instance.new("ScrollingFrame", MainFrame)
-Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 700)
+Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 850)
 Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
 
+-- Hàm tạo Toggle (Giữ nguyên cấu trúc v1.9 cực mượt)
 local function CreateToggle(name, callback)
     local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    local lbl = Instance.new("TextLabel", Frame); lbl.Size = UDim2.new(0.6, 0, 1, 0); lbl.Text = name; lbl.Position = UDim2.new(0, 12, 0, 0); lbl.BackgroundTransparency = 1; lbl.TextColor3 = Color3.fromRGB(220,220,220)
+    local lbl = Instance.new("TextLabel", Frame); lbl.Size = UDim2.new(0.6, 0, 1, 0); lbl.Text = name; lbl.Position = UDim2.new(0, 12, 0, 0); lbl.BackgroundTransparency = 1; lbl.TextColor3 = Color3.fromRGB(220,220,220); lbl.TextXAlignment = Enum.TextXAlignment.Left
     local Button = Instance.new("TextButton", Frame); Button.Size = UDim2.new(0.3, 0, 0.7, 0); Button.Position = UDim2.new(0.65, 0, 0.15, 0); Button.BackgroundColor3 = Color3.fromRGB(120, 120, 130); Button.Text = "OFF"; Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6)
     local state = false
     Button.MouseButton1Click:Connect(function()
@@ -67,15 +68,56 @@ local function CreateToggle(name, callback)
     end)
 end
 
--- ==================== TÍNH NĂNG ====================
+-- Hàm tạo Action Button (Nút kích hoạt lấy thuốc nhanh)
+local function CreateActionButton(name, callback)
+    local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
+    local lbl = Instance.new("TextLabel", Frame); lbl.Size = UDim2.new(0.6, 0, 1, 0); lbl.Text = name; lbl.Position = UDim2.new(0, 12, 0, 0); lbl.BackgroundTransparency = 1; lbl.TextColor3 = Color3.fromRGB(220,220,220); lbl.TextXAlignment = Enum.TextXAlignment.Left
+    local Button = Instance.new("TextButton", Frame); Button.Size = UDim2.new(0.3, 0, 0.7, 0); Button.Position = UDim2.new(0.65, 0, 0.15, 0); Button.BackgroundColor3 = Color3.fromRGB(0, 136, 255); Button.Text = "GET"; Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6); Button.TextColor3 = Color3.new(1,1,1)
+    Button.MouseButton1Click:Connect(callback)
+end
 
--- 1. ESP PHÂN BIỆT TỐT/XẤU
+-- Tiêu đề phân khu
+local function CreateSectionTitle(titleText)
+    local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 30); Frame.BackgroundTransparency = 1
+    local lbl = Instance.new("TextLabel", Frame); lbl.Size = UDim2.new(1, 0, 1, 0); lbl.Text = "--- " .. string.upper(titleText) .. " ---"; lbl.Font = Enum.Font.GothamBold; lbl.TextColor3 = Color3.fromRGB(0, 180, 255); lbl.BackgroundTransparency = 1; lbl.TextSize = 12
+end
+
+-- ==================== TÍNH NĂNG CHÍNH ====================
+
+CreateSectionTitle("HIKAS CHEATS")
+
+-- 1. ESP PHÂN BIỆT TỐT/XẤU (QUÉT SÂU ATTRIBUTE)
 local ESPEnabled = false
 local function IsBadEntity(char)
     local name = string.lower(char.Name)
-    -- CHỈNH SỬA CÁC TỪ KHOÁ Ở ĐÂY NẾU GAME ĐỔI TÊN
-    local badKeywords = {"fake", "impostor", "bad", "infected", "monster", "thief", "killer"}
+    local badKeywords = {"fake", "impostor", "bad", "infected", "monster", "thief", "killer", "enemy", "evil", "alien"}
     for _, v in pairs(badKeywords) do if string.find(name, v) then return true end end
+    
+    -- Quét Attribute ẩn của game
+    local attrs = char:GetAttributes()
+    for attrName, value in pairs(attrs) do
+        local lowerAttr = string.lower(attrName)
+        if string.find(lowerAttr, "role") or string.find(lowerAttr, "team") or string.find(lowerAttr, "impostor") or string.find(lowerAttr, "bad") then
+            if type(value) == "string" then
+                local lowerVal = string.lower(value)
+                if string.find(lowerVal, "impostor") or string.find(lowerVal, "bad") or string.find(lowerVal, "fake") or string.find(lowerVal, "infected") or string.find(lowerVal, "alien") then return true end
+            elseif type(value) == "boolean" and value == true then
+                if string.find(lowerAttr, "impostor") or string.find(lowerAttr, "bad") or string.find(lowerAttr, "infected") or string.find(lowerAttr, "fake") then return true end
+            end
+        end
+    end
+    
+    -- Quét các Value object bên trong
+    for _, child in pairs(char:GetChildren()) do
+        local childName = string.lower(child.Name)
+        if string.find(childName, "impostor") or string.find(childName, "bad") or string.find(childName, "infected") or string.find(childName, "fake") or string.find(childName, "role") then
+            if child:IsA("ValueBase") then
+                local val = tostring(child.Value):lower()
+                if string.find(val, "impostor") or string.find(val, "bad") or string.find(val, "fake") or string.find(val, "infected") then return true end
+            else return true end
+        end
+    end
     return false
 end
 
@@ -85,8 +127,11 @@ RunService.RenderStepped:Connect(function()
             if v:IsA("Model") and v:FindFirstChild("Humanoid") and v ~= LocalPlayer.Character then
                 if not v:FindFirstChild("HikasESP") then
                     local h = Instance.new("Highlight", v); h.Name = "HikasESP"
-                    h.FillColor = IsBadEntity(v) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
                     h.FillTransparency = 0.5
+                end
+                local h = v:FindFirstChild("HikasESP")
+                if h then
+                    h.FillColor = IsBadEntity(v) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
                 end
             end
         end
@@ -123,16 +168,27 @@ CreateToggle("Super Jump", function(s)
     if h then h.JumpPower = s and 100 or 50 end
 end)
 
--- 5. NPC FAST MOVE
-local NPCSpeed = 30
+-- 5. NPC FAST MOVE (SỬ DỤNG VÒNG LẶP LIÊN TỤC)
+local NPCSpeed = 45
+local NPCSpeedConn
 CreateToggle("NPC Fast Move", function(s)
     if s then
-        for _, v in pairs(workspace:GetDescendants()) do if v:IsA("Humanoid") and v.Parent ~= LocalPlayer.Character then v.WalkSpeed = NPCSpeed end end
-        workspace.DescendantAdded:Connect(function(v) if v:IsA("Humanoid") and v.Parent ~= LocalPlayer.Character then v.WalkSpeed = NPCSpeed end end)
+        NPCSpeedConn = RunService.Heartbeat:Connect(function()
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Humanoid") and v.Parent ~= LocalPlayer.Character and v.WalkSpeed < 50 then
+                    v.WalkSpeed = NPCSpeed
+                end
+            end
+        end)
+    else
+        if NPCSpeedConn then 
+            NPCSpeedConn:Disconnect() 
+            NPCSpeedConn = nil
+        end
     end
 end)
 
--- 6. WALK SPEED INPUT
+-- 6. WALK SPEED INPUT (Tốc độ người chơi)
 local SpeedFrame = Instance.new("Frame", Container); SpeedFrame.Size = UDim2.new(1, -10, 0, 50); SpeedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 Instance.new("UICorner", SpeedFrame).CornerRadius = UDim.new(0, 8)
 local SpeedLbl = Instance.new("TextLabel", SpeedFrame); SpeedLbl.Text = "WalkSpeed:"; SpeedLbl.Size = UDim2.new(0.5, 0, 1, 0); SpeedLbl.Position = UDim2.new(0, 12, 0, 0); SpeedLbl.BackgroundTransparency = 1; SpeedLbl.TextColor3 = Color3.new(1,1,1)
@@ -144,3 +200,41 @@ SpeedInput.FocusLost:Connect(function()
         LocalPlayer.Character.Humanoid.WalkSpeed = num
     end
 end)
+
+
+-- ==================== MEDICINE BYPASS (LẤY THUỐC TỪ XA) ====================
+
+CreateSectionTitle("MEDICINE BYPASS")
+
+local function TakeMedicine(itemName)
+    local found = false
+    -- Cách 1: Tự động kích hoạt ProximityPrompt từ xa
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            local parentName = string.lower(obj.Parent.Name)
+            local promptAction = string.lower(obj.ActionText)
+            local promptObject = string.lower(obj.ObjectText)
+            if string.find(parentName, itemName) or string.find(promptAction, itemName) or string.find(promptObject, itemName) then
+                fireproximityprompt(obj)
+                found = true
+            end
+        end
+    end
+    -- Cách 2 (Dự phòng): Copy vật phẩm trực tiếp
+    if not found then
+        for _, obj in pairs(game:GetDescendants()) do
+            if obj:IsA("Tool") and string.find(string.lower(obj.Name), itemName) then
+                local clone = obj:Clone()
+                clone.Parent = LocalPlayer:WaitForChild("Backpack")
+                found = true
+                break
+            end
+        end
+    end
+end
+
+CreateActionButton("Get Pill", function() TakeMedicine("pill") end)
+CreateActionButton("Get Liquid", function() TakeMedicine("liquid") or TakeMedicine("bottle") end)
+CreateActionButton("Get Vaccine", function() TakeMedicine("vaccine") or TakeMedicine("syringe") end)
+CreateActionButton("Get Bandage", function() TakeMedicine("bandage") end)
+CreateActionButton("Get Spray", function() TakeMedicine("spray") end)
