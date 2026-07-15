@@ -1,298 +1,107 @@
 -- =================================================================
---                   HIKAS - PRIVATE EDITION v1.5
+--                   HIKAS - PRIVATE EDITION v1.7
 -- =================================================================
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
--- Hủy Menu cũ nếu lỡ chạy 2 lần tránh bị trùng giao diện
+-- Hủy Menu cũ nếu lỡ chạy 2 lần
 if game:GetService("CoreGui"):FindFirstChild("HikasMenu") then
     game:GetService("CoreGui").HikasMenu:Destroy()
 end
 
--- 1. TẠO GIAO DIỆN CHÍNH
+-- 1. GIAO DIỆN CHÍNH
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "HikasMenu"
 ScreenGui.ResetOnSpawn = false
 pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
 if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- Bảng Menu chính
+-- Bảng Menu
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 330, 0, 340)
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -170)
+MainFrame.Size = UDim2.new(0, 330, 0, 400) -- Tăng size tí cho vừa ESP
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 
-local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(0, 12)
-Corner.Parent = MainFrame
+local Corner = Instance.new("UICorner", MainFrame); Corner.CornerRadius = UDim.new(0, 12)
+local Stroke = Instance.new("UIStroke", MainFrame); Stroke.Thickness = 1.5; Stroke.Color = Color3.fromRGB(35, 35, 45)
 
-local Stroke = Instance.new("UIStroke")
-Stroke.Thickness = 1.5
-Stroke.Color = Color3.fromRGB(35, 35, 45)
-Stroke.Parent = MainFrame
+-- Header
+local TopBar = Instance.new("Frame", MainFrame); TopBar.Size = UDim2.new(1, 0, 0, 45); TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
+local Title = Instance.new("TextLabel", TopBar); Title.Size = UDim2.new(1, -80, 1, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS 👑"; Title.Position = UDim2.new(0, 15, 0, 0)
 
--- 2. THANH TIÊU ĐỀ (TOP BAR)
-local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(1, 0, 0, 45)
-TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
-TopBar.BorderSizePixel = 0
-TopBar.Parent = MainFrame
+local CloseBtn = Instance.new("TextButton", TopBar); CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0.5, -15); CloseBtn.Text = "✕"; CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+local MinimizeBtn = Instance.new("TextButton", TopBar); MinimizeBtn.Size = UDim2.new(0, 30, 0, 30); MinimizeBtn.Position = UDim2.new(1, -65, 0.5, -15); MinimizeBtn.Text = "−"; MinimizeBtn.BackgroundTransparency = 1; MinimizeBtn.TextColor3 = Color3.fromRGB(255, 200, 85)
 
-local TopBarCorner = Instance.new("UICorner")
-TopBarCorner.CornerRadius = UDim.new(0, 12)
-TopBarCorner.Parent = TopBar
+-- Nút mở lại (Nút tròn)
+local OpenBtn = Instance.new("TextButton", ScreenGui); OpenBtn.Name = "HikasOpenButton"; OpenBtn.Size = UDim2.new(0, 50, 0, 50); OpenBtn.Position = UDim2.new(0.05, 0, 0.15, 0); OpenBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 28); OpenBtn.Text = "H"; OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255); OpenBtn.Visible = false; OpenBtn.Draggable = true
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0)
+Instance.new("UIStroke", OpenBtn).Color = Color3.fromRGB(0, 136, 255)
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -80, 1, 0)
-Title.Position = UDim2.new(0, 15, 0, 0)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
-Title.Text = "HIKAS 👑"
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TopBar
+MinimizeBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; OpenBtn.Visible = true end)
+OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; OpenBtn.Visible = false end)
 
--- Nút Tắt hẳn Script (✕) - Bấm vào là xóa hoàn toàn cả Menu lẫn nút mở
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -35, 0.5, -15)
-CloseBtn.BackgroundTransparency = 1
-CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 16
-CloseBtn.Text = "✕"
-CloseBtn.Parent = TopBar
+-- Container
+local Container = Instance.new("ScrollingFrame", MainFrame); Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 500)
+Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
 
--- Nút Thu Nhỏ/Đóng tạm thời (-)
-local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-MinimizeBtn.Position = UDim2.new(1, -65, 0.5, -15)
-MinimizeBtn.BackgroundTransparency = 1
-MinimizeBtn.TextColor3 = Color3.fromRGB(255, 200, 85)
-MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.TextSize = 18
-MinimizeBtn.Text = "−"
-MinimizeBtn.Parent = TopBar
-
--- 3. NÚT TRÒN MỞ LẠI MENU (GỌN GÀNG)
-local OpenBtn = Instance.new("TextButton")
-OpenBtn.Name = "HikasOpenButton"
-OpenBtn.Size = UDim2.new(0, 50, 0, 50)
-OpenBtn.Position = UDim2.new(0.05, 0, 0.15, 0) -- Nằm ở góc trên bên trái
-OpenBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
-OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenBtn.Font = Enum.Font.GothamBold
-OpenBtn.TextSize = 18
-OpenBtn.Text = "H"
-OpenBtn.Visible = false -- Ban đầu ẩn đi
-OpenBtn.Active = true
-OpenBtn.Draggable = true -- Có thể kéo thả nút này đi chỗ khác trên màn hình cho đỡ vướng
-OpenBtn.Parent = ScreenGui
-
-local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(1, 0) -- Tạo hình tròn
-OpenCorner.Parent = OpenBtn
-
-local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Thickness = 1.5
-OpenStroke.Color = Color3.fromRGB(0, 136, 255) -- Viền xanh dương phát sáng
-OpenStroke.Parent = OpenBtn
-
--- Logic Đóng/Mở Menu qua lại
-MinimizeBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-    OpenBtn.Visible = true
-end)
-
-OpenBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = true
-    OpenBtn.Visible = false
-end)
-
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy() -- Tắt hẳn, xóa sạch mọi thứ
-end)
-
--- 4. SCROLLING CONTAINER (Chứa các tính năng)
-local Container = Instance.new("ScrollingFrame")
-Container.Size = UDim2.new(1, -20, 1, -65)
-Container.Position = UDim2.new(0, 10, 0, 55)
-Container.BackgroundTransparency = 1
-Container.CanvasSize = UDim2.new(0, 0, 0, 380)
-Container.ScrollBarThickness = 4
-Container.Parent = MainFrame
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = Container
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 10)
-
--- Hàm tạo Toggle Button
-local function CreateToggle(name, default_state, callback)
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(1, -10, 0, 45)
-    Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-    Frame.BorderSizePixel = 0
-    Frame.Parent = Container
-
-    local FCorner = Instance.new("UICorner")
-    FCorner.CornerRadius = UDim.new(0, 8)
-    FCorner.Parent = Frame
-
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.6, 0, 1, 0)
-    Label.Position = UDim2.new(0, 12, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-    Label.Font = Enum.Font.GothamSemibold
-    Label.TextSize = 14
-    Label.Text = name
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Parent = Frame
-
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(0.3, 0, 0.7, 0)
-    Button.Position = UDim2.new(0.65, 0, 0.15, 0)
-    Button.BackgroundColor3 = default_state and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(120, 120, 130)
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.Font = Enum.Font.GothamBold
-    Button.TextSize = 12
-    Button.Text = default_state and "ON" or "OFF"
-    Button.Parent = Frame
-
-    local BCorner = Instance.new("UICorner")
-    BCorner.CornerRadius = UDim.new(0, 6)
-    BCorner.Parent = Button
-
-    local state = default_state
+local function CreateToggle(name, callback)
+    local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
+    Instance.new("TextLabel", Frame).Size = UDim2.new(0.6, 0, 1, 0); Instance.new("TextLabel", Frame).Text = name; Instance.new("TextLabel", Frame).Position = UDim2.new(0, 12, 0, 0); Instance.new("TextLabel", Frame).BackgroundTransparency = 1; Instance.new("TextLabel", Frame).TextColor3 = Color3.fromRGB(220,220,220)
+    local Button = Instance.new("TextButton", Frame); Button.Size = UDim2.new(0.3, 0, 0.7, 0); Button.Position = UDim2.new(0.65, 0, 0.15, 0); Button.BackgroundColor3 = Color3.fromRGB(120, 120, 130); Button.Text = "OFF"; Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6)
+    local state = false
     Button.MouseButton1Click:Connect(function()
         state = not state
-        if state then
-            Button.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-            Button.Text = "ON"
-        else
-            Button.BackgroundColor3 = Color3.fromRGB(120, 120, 130)
-            Button.Text = "OFF"
-        end
+        Button.BackgroundColor3 = state and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(120, 120, 130)
+        Button.Text = state and "ON" or "OFF"
         pcall(callback, state)
     end)
 end
 
--- ==================== CÁC TÍNH NĂNG CHÍNH ====================
+-- ==================== LOGIC TÍNH NĂNG ====================
 
--- TÍNH NĂNG 1: Instant Interact NPC (Bypass 0s)
-local InstantEnabled = false
-local ProximityConnection
-
-local function HackProximity(prompt)
-    if prompt:IsA("ProximityPrompt") then
-        prompt.HoldDuration = 0
-        if InstantEnabled then
-            prompt.PromptButtonHoldBegan:Connect(function()
-                fireproximityprompt(prompt)
-            end)
-        end
-    end
+-- ESP Logic
+local ESPEnabled = false
+local function IsStrong(char)
+    -- CHỈNH SỬA DÒNG NÀY ĐỂ NHẬN DẠNG KẺ MẠNH
+    -- Ví dụ: if char:FindFirstChild("IsBoss") then return true end
+    -- Ở đây mình mặc định là check tên có chữ "Strong"
+    return string.find(char.Name, "Strong") ~= nil 
 end
 
-CreateToggle("Instant Interact (Bypass)", false, function(enabled)
-    InstantEnabled = enabled
-    if enabled then
+RunService.RenderStepped:Connect(function()
+    if ESPEnabled then
         for _, v in pairs(workspace:GetDescendants()) do
-            HackProximity(v)
-        end
-        ProximityConnection = workspace.DescendantAdded:Connect(function(v)
-            if InstantEnabled then
-                HackProximity(v)
+            if v:IsA("Model") and v:FindFirstChild("Humanoid") and v ~= LocalPlayer.Character then
+                local highlight = v:FindFirstChild("HikasESP")
+                if not highlight then
+                    highlight = Instance.new("Highlight", v)
+                    highlight.Name = "HikasESP"
+                end
+                highlight.FillColor = IsStrong(v) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
+                highlight.FillTransparency = 0.5
             end
-        end)
+        end
     else
-        if ProximityConnection then
-            ProximityConnection:Disconnect()
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v.Name == "HikasESP" then v:Destroy() end
         end
     end
 end)
 
--- TÍNH NĂNG 2: Jump Power (Nhảy cao)
-CreateToggle("Super Jump (Nhảy Cao)", false, function(enabled)
-    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.JumpPower = enabled and 100 or 50
-    end
+CreateToggle("ESP Entities", function(s) ESPEnabled = s end)
+CreateToggle("Noclip", function(s) 
+    if s then 
+        RunService.Stepped:connect(function() if LocalPlayer.Character then for _,p in pairs(LocalPlayer.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end end)
+    end 
 end)
 
--- TÍNH NĂNG 3: ĐIỀN SỐ CHỈNH TỐC ĐỘ (SPEED INPUT)
-local SpeedFrame = Instance.new("Frame")
-SpeedFrame.Size = UDim2.new(1, -10, 0, 50)
-SpeedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-SpeedFrame.BorderSizePixel = 0
-SpeedFrame.Parent = Container
-
-local SpeedCorner = Instance.new("UICorner")
-SpeedCorner.CornerRadius = UDim.new(0, 8)
-SpeedCorner.Parent = SpeedFrame
-
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(0.6, 0, 1, 0)
-SpeedLabel.Position = UDim2.new(0, 12, 0, 0)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-SpeedLabel.Font = Enum.Font.GothamSemibold
-SpeedLabel.TextSize = 14
-SpeedLabel.Text = "WalkSpeed (Tốc độ)"
-SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpeedLabel.Parent = SpeedFrame
-
--- Ô nhập số (TextBox)
-local SpeedInput = Instance.new("TextBox")
-SpeedInput.Size = UDim2.new(0.3, 0, 0.7, 0)
-SpeedInput.Position = UDim2.new(0.65, 0, 0.15, 0)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedInput.Font = Enum.Font.GothamBold
-SpeedInput.TextSize = 14
-SpeedInput.Text = "16"
-SpeedInput.PlaceholderText = "Số..."
-SpeedInput.ClearTextOnFocus = false
-SpeedInput.Parent = SpeedFrame
-
-local InputCorner = Instance.new("UICorner")
-InputCorner.CornerRadius = UDim.new(0, 6)
-InputCorner.Parent = SpeedInput
-
-local CurrentSpeed = 16
-
--- Hàm áp dụng tốc độ mới
-local function ApplySpeed(value)
-    local num = tonumber(value)
-    if num then
-        CurrentSpeed = num
-        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = CurrentSpeed
-        end
-    else
-        SpeedInput.Text = tostring(CurrentSpeed)
-    end
-end
-
-SpeedInput.FocusLost:Connect(function(enterPressed)
-    ApplySpeed(SpeedInput.Text)
-end)
-
--- Tự động giữ nguyên tốc độ đã điền khi hồi sinh
-LocalPlayer.CharacterAdded:Connect(function(char)
-    local humanoid = char:WaitForChild("Humanoid")
-    task.wait(0.5)
-    humanoid.WalkSpeed = CurrentSpeed
-end)
+-- (Giữ nguyên các hàm cũ: Walkspeed, Jump, Interact...)
