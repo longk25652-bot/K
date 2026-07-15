@@ -1,5 +1,5 @@
 -- =================================================================
---         HIKAS - PRIVATE EDITION v2.5 (FIXED UI)
+--         HIKAS - PRIVATE EDITION v2.6 (HOSPITAL WORKING)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -31,7 +31,7 @@ local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Size = UDim2.new(1, 0, 0, 45); TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS v2.5🏥"
+Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS v2.6 🏥"
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0.5, -15); CloseBtn.Text = "✕"; CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
@@ -52,7 +52,7 @@ local Container = Instance.new("ScrollingFrame", MainFrame)
 Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 700)
 Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
 
--- Hàm tạo Toggle gốc v2.0
+-- Hàm tạo Toggle gốc
 local function CreateToggle(name, callback)
     local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
@@ -105,45 +105,55 @@ SpeedInput.FocusLost:Connect(function()
     end
 end)
 
--- ==================== HOSPITAL AUTO (VIẾT THEO CẤU TRÚC V2.0) ====================
+-- ==================== HOSPITAL LOGIC NÂNG CẤP V2.6 ====================
 
 local Hospital4Steps = false
 local HospitalSkipDNA = false
 
-local function ProcessPrompt(v)
-    if v:IsA("ProximityPrompt") then
-        local name = string.lower(v.Parent.Name)
-        local action = string.lower(v.ActionText)
-        
-        if Hospital4Steps then
-            if string.find(name, "sample") or string.find(action, "sample") or string.find(name, "take") then fireproximityprompt(v) end
-            if string.find(name, "analyze") or string.find(action, "dna") then fireproximityprompt(v) end
-            if string.find(name, "computer") or string.find(action, "input") then fireproximityprompt(v) end
-            if string.find(name, "medicine") or string.find(action, "cure") or string.find(action, "get") then fireproximityprompt(v) end
-        elseif HospitalSkipDNA then
-            if string.find(name, "sample") or string.find(action, "sample") or string.find(name, "take") then fireproximityprompt(v) end
-            -- Bỏ qua hoàn toàn dòng check DNA
-            if string.find(name, "computer") or string.find(action, "input") then fireproximityprompt(v) end
-            if string.find(name, "medicine") or string.find(action, "cure") or string.find(action, "get") then fireproximityprompt(v) end
+-- Vòng lặp quét thời gian thực siêu nhẹ (0.2 giây một lần) để nhấn nút khi đứng cạnh
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        if (Hospital4Steps or HospitalSkipDNA) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local myPos = LocalPlayer.Character.HumanoidRootPart.Position
+            
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("ProximityPrompt") then
+                    local part = v.Parent
+                    if part and part:IsA("BasePart") and (part.Position - myPos).Magnitude < 20 then
+                        -- Lấy thông tin chữ trên nút để quét chính xác hơn
+                        local name = string.lower(part.Name)
+                        local action = string.lower(v.ActionText)
+                        local object = string.lower(v.ObjectText)
+                        
+                        -- Kiểm tra từ khóa
+                        local isSample = string.find(name, "sam") or string.find(action, "sam") or string.find(name, "tak") or string.find(action, "tak")
+                        local isDNA = string.find(name, "dna") or string.find(action, "dna") or string.find(name, "ana") or string.find(action, "ana")
+                        local isComputer = string.find(name, "com") or string.find(action, "com") or string.find(name, "inp") or string.find(action, "diag")
+                        local isMedicine = string.find(name, "med") or string.find(action, "med") or string.find(name, "cur") or string.find(action, "get")
+                        
+                        if Hospital4Steps then
+                            if isSample or isDNA or isComputer or isMedicine then
+                                fireproximityprompt(v)
+                            end
+                        elseif HospitalSkipDNA then
+                            if isSample or isComputer or isMedicine then
+                                fireproximityprompt(v)
+                            end
+                        end
+                    end
+                end
+            end
         end
     end
-end
-
--- Tận dụng cơ chế quét sự kiện siêu nhẹ của v2.0 để tự kích hoạt khi đi ngang qua máy
-workspace.DescendantAdded:Connect(ProcessPrompt)
+end)
 
 CreateToggle("Auto Hospital 4 Steps", function(s)
     Hospital4Steps = s
-    if s then 
-        HospitalSkipDNA = false
-        for _,v in pairs(workspace:GetDescendants()) do ProcessPrompt(v) end
-    end
+    if s then HospitalSkipDNA = false end
 end)
 
 CreateToggle("Auto Hospital Skip DNA", function(s)
     HospitalSkipDNA = s
-    if s then 
-        Hospital4Steps = false
-        for _,v in pairs(workspace:GetDescendants()) do ProcessPrompt(v) end
-    end
+    if s then Hospital4Steps = false end
 end)
