@@ -1,18 +1,17 @@
 -- =================================================================
---         HIKAS - PRIVATE EDITION v1.9 (CLEANED ORIGINAL)
+--         HIKAS - PRIVATE EDITION v2.5 (FIXED UI)
 -- =================================================================
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 -- Hủy Menu cũ
 if game:GetService("CoreGui"):FindFirstChild("HikasMenu") then
     game:GetService("CoreGui").HikasMenu:Destroy()
 end
 
--- 1. GIAO DIỆN CHÍNH (Giữ nguyên gốc v1.9)
+-- 1. GIAO DIỆN CHÍNH (Giữ nguyên gốc v2.0 chạy mượt)
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "HikasMenu"
 ScreenGui.ResetOnSpawn = false
@@ -32,7 +31,7 @@ local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Size = UDim2.new(1, 0, 0, 45); TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS 👑"
+Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS v2.5 🏥"
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0.5, -15); CloseBtn.Text = "✕"; CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
@@ -53,6 +52,7 @@ local Container = Instance.new("ScrollingFrame", MainFrame)
 Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 700)
 Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
 
+-- Hàm tạo Toggle gốc v2.0
 local function CreateToggle(name, callback)
     local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
@@ -67,9 +67,8 @@ local function CreateToggle(name, callback)
     end)
 end
 
--- ==================== TÍNH NĂNG NỀN V1.9 GỐC ====================
+-- ==================== TÍNH NĂNG NỀN V2.0 GỐC ====================
 
--- 1. NOCLIP (Giữ nguyên cấu trúc v1.9 gốc)
 local NoclipEnabled = false
 local NoclipConn
 CreateToggle("Noclip", function(s) 
@@ -79,7 +78,6 @@ CreateToggle("Noclip", function(s)
     elseif NoclipConn then NoclipConn:Disconnect() end
 end)
 
--- 2. INSTANT INTERACT (Giữ nguyên cấu trúc v1.9 gốc)
 local InstantEnabled = false
 local IntConn
 CreateToggle("Instant Interact", function(s)
@@ -90,13 +88,11 @@ CreateToggle("Instant Interact", function(s)
     elseif IntConn then IntConn:Disconnect() end
 end)
 
--- 3. SUPER JUMP (Giữ nguyên cấu trúc v1.9 gốc)
 CreateToggle("Super Jump", function(s)
     local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if h then h.JumpPower = s and 100 or 50 end
 end)
 
--- 4. WALK SPEED INPUT (Giữ nguyên cấu trúc v1.9 gốc)
 local SpeedFrame = Instance.new("Frame", Container); SpeedFrame.Size = UDim2.new(1, -10, 0, 50); SpeedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 Instance.new("UICorner", SpeedFrame).CornerRadius = UDim.new(0, 8)
 local SpeedLbl = Instance.new("TextLabel", SpeedFrame); SpeedLbl.Text = "WalkSpeed:"; SpeedLbl.Size = UDim2.new(0.5, 0, 1, 0); SpeedLbl.Position = UDim2.new(0, 12, 0, 0); SpeedLbl.BackgroundTransparency = 1; SpeedLbl.TextColor3 = Color3.new(1,1,1)
@@ -106,5 +102,48 @@ SpeedInput.FocusLost:Connect(function()
     local num = tonumber(SpeedInput.Text)
     if num and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = num
+    end
+end)
+
+-- ==================== HOSPITAL AUTO (VIẾT THEO CẤU TRÚC V2.0) ====================
+
+local Hospital4Steps = false
+local HospitalSkipDNA = false
+
+local function ProcessPrompt(v)
+    if v:IsA("ProximityPrompt") then
+        local name = string.lower(v.Parent.Name)
+        local action = string.lower(v.ActionText)
+        
+        if Hospital4Steps then
+            if string.find(name, "sample") or string.find(action, "sample") or string.find(name, "take") then fireproximityprompt(v) end
+            if string.find(name, "analyze") or string.find(action, "dna") then fireproximityprompt(v) end
+            if string.find(name, "computer") or string.find(action, "input") then fireproximityprompt(v) end
+            if string.find(name, "medicine") or string.find(action, "cure") or string.find(action, "get") then fireproximityprompt(v) end
+        elseif HospitalSkipDNA then
+            if string.find(name, "sample") or string.find(action, "sample") or string.find(name, "take") then fireproximityprompt(v) end
+            -- Bỏ qua hoàn toàn dòng check DNA
+            if string.find(name, "computer") or string.find(action, "input") then fireproximityprompt(v) end
+            if string.find(name, "medicine") or string.find(action, "cure") or string.find(action, "get") then fireproximityprompt(v) end
+        end
+    end
+end
+
+-- Tận dụng cơ chế quét sự kiện siêu nhẹ của v2.0 để tự kích hoạt khi đi ngang qua máy
+workspace.DescendantAdded:Connect(ProcessPrompt)
+
+CreateToggle("Auto Hospital 4 Steps", function(s)
+    Hospital4Steps = s
+    if s then 
+        HospitalSkipDNA = false
+        for _,v in pairs(workspace:GetDescendants()) do ProcessPrompt(v) end
+    end
+end)
+
+CreateToggle("Auto Hospital Skip DNA", function(s)
+    HospitalSkipDNA = s
+    if s then 
+        Hospital4Steps = false
+        for _,v in pairs(workspace:GetDescendants()) do ProcessPrompt(v) end
     end
 end)
