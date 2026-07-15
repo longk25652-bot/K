@@ -1,5 +1,5 @@
 -- =================================================================
---                   HIKAS - PRIVATE EDITION v1.2
+--                   HIKAS - PRIVATE EDITION v1.5
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -62,7 +62,7 @@ Title.Text = "HIKAS 👑"
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
--- Nút Đóng (✕)
+-- Nút Tắt hẳn Script (✕) - Bấm vào là xóa hoàn toàn cả Menu lẫn nút mở
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Position = UDim2.new(1, -35, 0.5, -15)
@@ -73,11 +73,7 @@ CloseBtn.TextSize = 16
 CloseBtn.Text = "✕"
 CloseBtn.Parent = TopBar
 
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
--- Nút Thu Nhỏ (-)
+-- Nút Thu Nhỏ/Đóng tạm thời (-)
 local MinimizeBtn = Instance.new("TextButton")
 MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
 MinimizeBtn.Position = UDim2.new(1, -65, 0.5, -15)
@@ -88,26 +84,46 @@ MinimizeBtn.TextSize = 18
 MinimizeBtn.Text = "−"
 MinimizeBtn.Parent = TopBar
 
--- Logic Thu Nhỏ / Phóng To Menu
-local IsMinimized = false
+-- 3. NÚT TRÒN MỞ LẠI MENU (GỌN GÀNG)
+local OpenBtn = Instance.new("TextButton")
+OpenBtn.Name = "HikasOpenButton"
+OpenBtn.Size = UDim2.new(0, 50, 0, 50)
+OpenBtn.Position = UDim2.new(0.05, 0, 0.15, 0) -- Nằm ở góc trên bên trái
+OpenBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.TextSize = 18
+OpenBtn.Text = "H"
+OpenBtn.Visible = false -- Ban đầu ẩn đi
+OpenBtn.Active = true
+OpenBtn.Draggable = true -- Có thể kéo thả nút này đi chỗ khác trên màn hình cho đỡ vướng
+OpenBtn.Parent = ScreenGui
+
+local OpenCorner = Instance.new("UICorner")
+OpenCorner.CornerRadius = UDim.new(1, 0) -- Tạo hình tròn
+OpenCorner.Parent = OpenBtn
+
+local OpenStroke = Instance.new("UIStroke")
+OpenStroke.Thickness = 1.5
+OpenStroke.Color = Color3.fromRGB(0, 136, 255) -- Viền xanh dương phát sáng
+OpenStroke.Parent = OpenBtn
+
+-- Logic Đóng/Mở Menu qua lại
 MinimizeBtn.MouseButton1Click:Connect(function()
-    IsMinimized = not IsMinimized
-    if IsMinimized then
-        -- Thu nhỏ chỉ còn hiện thanh tiêu đề
-        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 330, 0, 45)
-        }):Play()
-        MinimizeBtn.Text = "+"
-    else
-        -- Phóng to lại như cũ
-        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 330, 0, 340)
-        }):Play()
-        MinimizeBtn.Text = "−"
-    end
+    MainFrame.Visible = false
+    OpenBtn.Visible = true
 end)
 
--- 3. SCROLLING CONTAINER (Chứa các tính năng)
+OpenBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    OpenBtn.Visible = false
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy() -- Tắt hẳn, xóa sạch mọi thứ
+end)
+
+-- 4. SCROLLING CONTAINER (Chứa các tính năng)
 local Container = Instance.new("ScrollingFrame")
 Container.Size = UDim2.new(1, -20, 1, -65)
 Container.Position = UDim2.new(0, 10, 0, 55)
@@ -215,9 +231,9 @@ CreateToggle("Super Jump (Nhảy Cao)", false, function(enabled)
     end
 end)
 
--- TÍNH NĂNG 3: THANH KÉO CHỈNH TỐC ĐỘ (SPEED SLIDER)
+-- TÍNH NĂNG 3: ĐIỀN SỐ CHỈNH TỐC ĐỘ (SPEED INPUT)
 local SpeedFrame = Instance.new("Frame")
-SpeedFrame.Size = UDim2.new(1, -10, 0, 75)
+SpeedFrame.Size = UDim2.new(1, -10, 0, 50)
 SpeedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 SpeedFrame.BorderSizePixel = 0
 SpeedFrame.Parent = Container
@@ -227,85 +243,54 @@ SpeedCorner.CornerRadius = UDim.new(0, 8)
 SpeedCorner.Parent = SpeedFrame
 
 local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(1, -20, 0, 30)
-SpeedLabel.Position = UDim2.new(0, 10, 0, 5)
+SpeedLabel.Size = UDim2.new(0.6, 0, 1, 0)
+SpeedLabel.Position = UDim2.new(0, 12, 0, 0)
 SpeedLabel.BackgroundTransparency = 1
 SpeedLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 SpeedLabel.Font = Enum.Font.GothamSemibold
-SpeedLabel.TextSize = 13
-SpeedLabel.Text = "WalkSpeed: 16"
+SpeedLabel.TextSize = 14
+SpeedLabel.Text = "WalkSpeed (Tốc độ)"
 SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 SpeedLabel.Parent = SpeedFrame
 
--- Thanh trượt (Slider Background)
-local SliderButton = Instance.new("TextButton")
-SliderButton.Size = UDim2.new(1, -20, 0, 8)
-SliderButton.Position = UDim2.new(0, 10, 0, 45)
-SliderButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-SliderButton.BorderSizePixel = 0
-SliderButton.Text = ""
-SliderButton.Parent = SpeedFrame
+-- Ô nhập số (TextBox)
+local SpeedInput = Instance.new("TextBox")
+SpeedInput.Size = UDim2.new(0.3, 0, 0.7, 0)
+SpeedInput.Position = UDim2.new(0.65, 0, 0.15, 0)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedInput.Font = Enum.Font.GothamBold
+SpeedInput.TextSize = 14
+SpeedInput.Text = "16"
+SpeedInput.PlaceholderText = "Số..."
+SpeedInput.ClearTextOnFocus = false
+SpeedInput.Parent = SpeedFrame
 
-local SliderCorner = Instance.new("UICorner")
-SliderCorner.CornerRadius = UDim.new(0, 4)
-SliderCorner.Parent = SliderButton
+local InputCorner = Instance.new("UICorner")
+InputCorner.CornerRadius = UDim.new(0, 6)
+InputCorner.Parent = SpeedInput
 
--- Núm trượt (Slider Drag)
-local SliderDrag = Instance.new("Frame")
-SliderDrag.Size = UDim2.new(0, 16, 0, 16)
-SliderDrag.Position = UDim2.new(0, 0, 0.5, -8)
-SliderDrag.BackgroundColor3 = Color3.fromRGB(0, 136, 255)
-SliderDrag.BorderSizePixel = 0
-SliderDrag.Parent = SliderButton
-
-local DragCorner = Instance.new("UICorner")
-DragCorner.CornerRadius = UDim.new(1, 0)
-DragCorner.Parent = SliderDrag
-
--- Logic kéo thả Slider chỉnh tốc độ
-local MinSpeed = 16
-local MaxSpeed = 200
 local CurrentSpeed = 16
 
-local IsDragging = false
-
-local function UpdateSpeed(input)
-    local relativeX = input.Position.X - SliderButton.AbsolutePosition.X
-    local percentage = math.clamp(relativeX / SliderButton.AbsoluteWidth, 0, 1)
-    
-    SliderDrag.Position = UDim2.new(percentage, -8, 0.5, -8)
-    
-    -- Tính toán giá trị WalkSpeed dựa trên phần trăm kéo
-    CurrentSpeed = math.round(MinSpeed + (percentage * (MaxSpeed - MinSpeed)))
-    SpeedLabel.Text = "WalkSpeed: " .. tostring(CurrentSpeed)
-    
-    -- Áp dụng tốc độ chạy trực tiếp lên nhân vật
-    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.WalkSpeed = CurrentSpeed
+-- Hàm áp dụng tốc độ mới
+local function ApplySpeed(value)
+    local num = tonumber(value)
+    if num then
+        CurrentSpeed = num
+        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = CurrentSpeed
+        end
+    else
+        SpeedInput.Text = tostring(CurrentSpeed)
     end
 end
 
-SliderButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        IsDragging = true
-        UpdateSpeed(input)
-    end
+SpeedInput.FocusLost:Connect(function(enterPressed)
+    ApplySpeed(SpeedInput.Text)
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-    if IsDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        UpdateSpeed(input)
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        IsDragging = false
-    end
-end)
-
--- Tự động giữ nguyên tốc độ đã chỉnh kể cả khi nhân vật hồi sinh lại
+-- Tự động giữ nguyên tốc độ đã điền khi hồi sinh
 LocalPlayer.CharacterAdded:Connect(function(char)
     local humanoid = char:WaitForChild("Humanoid")
     task.wait(0.5)
