@@ -1,11 +1,10 @@
 -- =================================================================
---          HIKAS - PRIVATE EDITION v1.9.1 (CLEAN VERSION)
+--          HIKAS - PRIVATE EDITION v1.9.2 (MINIMALIST)
 -- =================================================================
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 -- Hủy Menu cũ
 if game:GetService("CoreGui"):FindFirstChild("HikasMenu") then
@@ -18,8 +17,8 @@ ScreenGui.Name = "HikasMenu"
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 330, 0, 520)
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -260)
+MainFrame.Size = UDim2.new(0, 330, 0, 350) -- Giảm kích thước vì đã xóa hết tính năng phụ
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -175)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -32,7 +31,7 @@ local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Size = UDim2.new(1, 0, 0, 45); TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS 1.9.1 👑"
+Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS 1.9.2"
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0.5, -15); CloseBtn.Text = "✕"; CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
@@ -50,7 +49,7 @@ CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 -- Container
 local Container = Instance.new("ScrollingFrame", MainFrame)
-Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 900)
+Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 300)
 Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
 
 -- Hàm tạo UI
@@ -66,14 +65,6 @@ local function CreateToggle(name, callback)
         Button.Text = state and "ON" or "OFF"
         callback(state)
     end)
-end
-
-local function CreateActionButton(name, callback)
-    local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    local lbl = Instance.new("TextLabel", Frame); lbl.Size = UDim2.new(0.6, 0, 1, 0); lbl.Text = name; lbl.Position = UDim2.new(0, 12, 0, 0); lbl.BackgroundTransparency = 1; lbl.TextColor3 = Color3.fromRGB(220,220,220)
-    local Button = Instance.new("TextButton", Frame); Button.Size = UDim2.new(0.3, 0, 0.7, 0); Button.Position = UDim2.new(0.65, 0, 0.15, 0); Button.BackgroundColor3 = Color3.fromRGB(0, 136, 255); Button.Text = "GET"; Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6); Button.TextColor3 = Color3.new(1,1,1)
-    Button.MouseButton1Click:Connect(callback)
 end
 
 -- ==================== TÍNH NĂNG ====================
@@ -107,32 +98,3 @@ SpeedInput.FocusLost:Connect(function()
         LocalPlayer.Character.Humanoid.WalkSpeed = num
     end
 end)
-
--- ==================== MEDICINE BYPASS ====================
-
-local function TakeMedicine(keyword)
-    local found = false
-    -- 1. Tìm qua ProximityPrompt
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("ProximityPrompt") then
-            if string.find(string.lower(obj.Parent.Name), keyword) or string.find(string.lower(obj.ActionText), keyword) or string.find(string.lower(obj.ObjectText), keyword) then
-                fireproximityprompt(obj)
-                found = true
-            end
-        end
-    end
-    -- 2. Tìm qua Tool
-    if not found then
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("Tool") and string.find(string.lower(obj.Name), keyword) then
-                LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):EquipTool(obj)
-                found = true
-            end
-        end
-    end
-end
-
-CreateActionButton("Get Pill", function() TakeMedicine("pill") end)
-CreateActionButton("Get Liquid/Bottle", function() TakeMedicine("liquid") or TakeMedicine("bottle") end)
-CreateActionButton("Get Vaccine/Syringe", function() TakeMedicine("vaccine") or TakeMedicine("syringe") end)
-CreateActionButton("Get Bandage", function() TakeMedicine("bandage") end)
