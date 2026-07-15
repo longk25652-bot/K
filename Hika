@@ -1,5 +1,5 @@
 -- =================================================================
---                   HIKAS - PRIVATE EDITION v1.8 (FULL)
+--                   HIKAS - PRIVATE EDITION v1.9 (FULL)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -13,54 +13,44 @@ if game:GetService("CoreGui"):FindFirstChild("HikasMenu") then
 end
 
 -- 1. GIAO DIỆN CHÍNH
-local ScreenGui = Instance.new("ScreenGui")
+local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "HikasMenu"
 ScreenGui.ResetOnSpawn = false
-pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
-if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 330, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 330, 0, 480)
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -240)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.ClipsDescendants = true
-
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
-Instance.new("UIStroke", MainFrame).Thickness = 1.5
-Instance.new("UIStroke", MainFrame).Color = Color3.fromRGB(35, 35, 45)
+Instance.new("UIStroke", MainFrame).Thickness = 1.5; Instance.new("UIStroke", MainFrame).Color = Color3.fromRGB(35, 35, 45)
 
+-- Header
 local TopBar = Instance.new("Frame", MainFrame)
-TopBar.Size = UDim2.new(1, 0, 0, 45)
-TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+TopBar.Size = UDim2.new(1, 0, 0, 45); TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
-
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -80, 1, 0)
-Title.Position = UDim2.new(0, 15, 0, 0)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "HIKAS 👑"
+Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS 👑"
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0.5, -15); CloseBtn.Text = "✕"; CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
 local MinimizeBtn = Instance.new("TextButton", TopBar)
 MinimizeBtn.Size = UDim2.new(0, 30, 0, 30); MinimizeBtn.Position = UDim2.new(1, -65, 0.5, -15); MinimizeBtn.Text = "−"; MinimizeBtn.BackgroundTransparency = 1; MinimizeBtn.TextColor3 = Color3.fromRGB(255, 200, 85)
 
+-- Nút mở
 local OpenBtn = Instance.new("TextButton", ScreenGui)
 OpenBtn.Size = UDim2.new(0, 50, 0, 50); OpenBtn.Position = UDim2.new(0.05, 0, 0.15, 0); OpenBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 28); OpenBtn.Text = "H"; OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255); OpenBtn.Visible = false; OpenBtn.Draggable = true
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0)
-Instance.new("UIStroke", OpenBtn).Color = Color3.fromRGB(0, 136, 255)
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0); Instance.new("UIStroke", OpenBtn).Color = Color3.fromRGB(0, 136, 255)
 
 MinimizeBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; OpenBtn.Visible = true end)
 OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; OpenBtn.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
+-- Container
 local Container = Instance.new("ScrollingFrame", MainFrame)
-Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 600)
+Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 700)
 Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
 
 local function CreateToggle(name, callback)
@@ -79,11 +69,14 @@ end
 
 -- ==================== TÍNH NĂNG ====================
 
--- 1. ESP
+-- 1. ESP PHÂN BIỆT TỐT/XẤU
 local ESPEnabled = false
-local function IsStrong(char)
-    -- Thay đổi tên nhân vật "Strong" thành tên kẻ địch thực tế trong game
-    return string.find(char.Name, "Strong") ~= nil 
+local function IsBadEntity(char)
+    local name = string.lower(char.Name)
+    -- CHỈNH SỬA CÁC TỪ KHOÁ Ở ĐÂY NẾU GAME ĐỔI TÊN
+    local badKeywords = {"fake", "impostor", "bad", "infected", "monster", "thief", "killer"}
+    for _, v in pairs(badKeywords) do if string.find(name, v) then return true end end
+    return false
 end
 
 RunService.RenderStepped:Connect(function()
@@ -92,7 +85,7 @@ RunService.RenderStepped:Connect(function()
             if v:IsA("Model") and v:FindFirstChild("Humanoid") and v ~= LocalPlayer.Character then
                 if not v:FindFirstChild("HikasESP") then
                     local h = Instance.new("Highlight", v); h.Name = "HikasESP"
-                    h.FillColor = IsStrong(v) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
+                    h.FillColor = IsBadEntity(v) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
                     h.FillTransparency = 0.5
                 end
             end
@@ -101,7 +94,7 @@ RunService.RenderStepped:Connect(function()
         for _, v in pairs(workspace:GetDescendants()) do if v.Name == "HikasESP" then v:Destroy() end end
     end
 end)
-CreateToggle("ESP Entities", function(s) ESPEnabled = s end)
+CreateToggle("ESP Good/Bad", function(s) ESPEnabled = s end)
 
 -- 2. NOCLIP
 local NoclipEnabled = false
@@ -130,13 +123,21 @@ CreateToggle("Super Jump", function(s)
     if h then h.JumpPower = s and 100 or 50 end
 end)
 
--- 5. SPEED INPUT
+-- 5. NPC FAST MOVE
+local NPCSpeed = 30
+CreateToggle("NPC Fast Move", function(s)
+    if s then
+        for _, v in pairs(workspace:GetDescendants()) do if v:IsA("Humanoid") and v.Parent ~= LocalPlayer.Character then v.WalkSpeed = NPCSpeed end end
+        workspace.DescendantAdded:Connect(function(v) if v:IsA("Humanoid") and v.Parent ~= LocalPlayer.Character then v.WalkSpeed = NPCSpeed end end)
+    end
+end)
+
+-- 6. WALK SPEED INPUT
 local SpeedFrame = Instance.new("Frame", Container); SpeedFrame.Size = UDim2.new(1, -10, 0, 50); SpeedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 Instance.new("UICorner", SpeedFrame).CornerRadius = UDim.new(0, 8)
-Instance.new("TextLabel", SpeedFrame).Text = "WalkSpeed:"; Instance.new("TextLabel", SpeedFrame).Size = UDim2.new(0.5, 0, 1, 0); Instance.new("TextLabel", SpeedFrame).Position = UDim2.new(0, 12, 0, 0); Instance.new("TextLabel", SpeedFrame).BackgroundTransparency = 1; Instance.new("TextLabel", SpeedFrame).TextColor3 = Color3.new(1,1,1)
+local SpeedLbl = Instance.new("TextLabel", SpeedFrame); SpeedLbl.Text = "WalkSpeed:"; SpeedLbl.Size = UDim2.new(0.5, 0, 1, 0); SpeedLbl.Position = UDim2.new(0, 12, 0, 0); SpeedLbl.BackgroundTransparency = 1; SpeedLbl.TextColor3 = Color3.new(1,1,1)
 local SpeedInput = Instance.new("TextBox", SpeedFrame); SpeedInput.Size = UDim2.new(0.3, 0, 0.7, 0); SpeedInput.Position = UDim2.new(0.65, 0, 0.15, 0); SpeedInput.BackgroundColor3 = Color3.fromRGB(40,40,50); SpeedInput.Text = "16"; SpeedInput.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 6)
-
 SpeedInput.FocusLost:Connect(function()
     local num = tonumber(SpeedInput.Text)
     if num and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
