@@ -1,5 +1,5 @@
 -- =================================================================
---         HIKAS - PRIVATE EDITION v2.1 (ANIMAL HOSPITAL)
+--         HIKAS - PRIVATE EDITION v2.2 (HOSPITAL ACTION)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -12,14 +12,14 @@ if game:GetService("CoreGui"):FindFirstChild("HikasMenu") then
     game:GetService("CoreGui").HikasMenu:Destroy()
 end
 
--- GIAO DIỆN CHÍNH (Mốc v2.0)
+-- 1. GIAO DIỆN CHÍNH (Giữ nguyên gốc v2.0 chạy mượt)
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "HikasMenu"
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 330, 0, 520) -- Tăng nhẹ chiều cao để thêm nút Hospital
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -260)
+MainFrame.Size = UDim2.new(0, 330, 0, 500) -- Chiều cao vừa vặn cho các nút hành động
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -250)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -32,7 +32,7 @@ local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Size = UDim2.new(1, 0, 0, 45); TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS v2🏥"
+Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS v2.2 🏥"
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0.5, -15); CloseBtn.Text = "✕"; CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
@@ -53,6 +53,7 @@ local Container = Instance.new("ScrollingFrame", MainFrame)
 Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 750)
 Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
 
+-- Hàm tạo Toggle gốc
 local function CreateToggle(name, callback)
     local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
@@ -65,6 +66,15 @@ local function CreateToggle(name, callback)
         Button.Text = state and "ON" or "OFF"
         callback(state)
     end)
+end
+
+-- Hàm tạo Nút Hành Động (Gom cụm an toàn)
+local function CreateActionButton(name, callback)
+    local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
+    local lbl = Instance.new("TextLabel", Frame); lbl.Size = UDim2.new(0.6, 0, 1, 0); lbl.Text = name; lbl.Position = UDim2.new(0, 12, 0, 0); lbl.BackgroundTransparency = 1; lbl.TextColor3 = Color3.fromRGB(220,220,220)
+    local Button = Instance.new("TextButton", Frame); Button.Size = UDim2.new(0.3, 0, 0.7, 0); Button.Position = UDim2.new(0.65, 0, 0.15, 0); Button.BackgroundColor3 = Color3.fromRGB(0, 136, 255); Button.Text = "DO"; Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6); Button.TextColor3 = Color3.new(1,1,1)
+    Button.MouseButton1Click:Connect(callback)
 end
 
 -- ==================== TÍNH NĂNG NỀN V2.0 GỐC ====================
@@ -105,44 +115,24 @@ SpeedInput.FocusLost:Connect(function()
     end
 end)
 
--- ==================== CHẾ ĐỘ ANIMAL HOSPITAL (NEW) ====================
+-- ==================== HÀNH ĐỘNG HOSPITAL (AN TOÀN) ====================
 
-local function QuetVaKichHoat(tukhoa)
+local function ClickHospitalPrompt(keyword)
     for _, obj in pairs(workspace:GetDescendants()) do
         if obj:IsA("ProximityPrompt") then
-            local ten = string.lower(obj.Parent.Name)
-            local hanhdong = string.lower(obj.ActionText)
-            local doituong = string.lower(obj.ObjectText)
+            local name = string.lower(obj.Parent.Name)
+            local action = string.lower(obj.ActionText)
+            local object = string.lower(obj.ObjectText)
             
-            if string.find(ten, tukhoa) or string.find(hanhdong, tukhoa) or string.find(doituong, tukhoa) then
+            if string.find(name, keyword) or string.find(action, keyword) or string.find(object, keyword) then
                 fireproximityprompt(obj)
-                return true
+                break
             end
         end
     end
-    return false
 end
 
-CreateToggle("Auto Hospital Loop", function(state)
-    _G.HospitalLoop = state
-    task.spawn(function()
-        while _G.HospitalLoop do
-            -- Bước 1: Lấy mẫu bệnh phẩm (Sample / Take)
-            QuetVaKichHoat("sample") or QuetVaKichHoat("take")
-            task.wait(0.3)
-            
-            -- Bước 2: Phân tích DNA (Analyze / DNA)
-            QuetVaKichHoat("analyze") or QuetVaKichHoat("dna")
-            task.wait(0.3)
-            
-            -- Bước 3: Đưa dữ liệu vào máy tính (Computer / Input)
-            QuetVaKichHoat("computer") or QuetVaKichHoat("input")
-            task.wait(0.3)
-            
-            -- Bước 4: Lấy thuốc điều trị (Medicine / Cure / Get)
-            QuetVaKichHoat("medicine") or QuetVaKichHoat("cure")
-            
-            task.wait(0.5) -- Nghỉ một nhịp trước khi lặp lại vòng quét mới
-        end
-    end)
-end)
+CreateActionButton("1. Take Sample (Lấy mẫu)", function() ClickHospitalPrompt("sample") or ClickHospitalPrompt("take") end)
+CreateActionButton("2. Analyze DNA (Xét nghiệm)", function() ClickHospitalPrompt("analyze") or ClickHospitalPrompt("dna") end)
+CreateActionButton("3. Computer Input (Chẩn đoán)", function() ClickHospitalPrompt("computer") or ClickHospitalPrompt("input") or ClickHospitalPrompt("diagnose") end)
+CreateActionButton("4. Get Medicine (Lấy thuốc)", function() ClickHospitalPrompt("medicine") or ClickHospitalPrompt("cure") or ClickHospitalPrompt("get") end)
