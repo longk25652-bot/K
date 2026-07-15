@@ -1,5 +1,5 @@
 -- =================================================================
---         HIKAS - PRIVATE EDITION v1.9 (CLEANED ORIGINAL)
+--         HIKAS - PRIVATE EDITION v2.1 (ANIMAL HOSPITAL)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -12,14 +12,14 @@ if game:GetService("CoreGui"):FindFirstChild("HikasMenu") then
     game:GetService("CoreGui").HikasMenu:Destroy()
 end
 
--- 1. GIAO DIỆN CHÍNH (Giữ nguyên gốc v1.9)
+-- GIAO DIỆN CHÍNH (Mốc v2.0)
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "HikasMenu"
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 330, 0, 480)
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -240)
+MainFrame.Size = UDim2.new(0, 330, 0, 520) -- Tăng nhẹ chiều cao để thêm nút Hospital
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -260)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -32,7 +32,7 @@ local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Size = UDim2.new(1, 0, 0, 45); TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS 69👑"
+Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS v2.1 🏥"
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0.5, -15); CloseBtn.Text = "✕"; CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
@@ -50,7 +50,7 @@ CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 -- Container
 local Container = Instance.new("ScrollingFrame", MainFrame)
-Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 700)
+Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 750)
 Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
 
 local function CreateToggle(name, callback)
@@ -67,9 +67,8 @@ local function CreateToggle(name, callback)
     end)
 end
 
--- ==================== TÍNH NĂNG NỀN V1.9 GỐC ====================
+-- ==================== TÍNH NĂNG NỀN V2.0 GỐC ====================
 
--- 1. NOCLIP (Giữ nguyên cấu trúc v1.9 gốc)
 local NoclipEnabled = false
 local NoclipConn
 CreateToggle("Noclip", function(s) 
@@ -79,7 +78,6 @@ CreateToggle("Noclip", function(s)
     elseif NoclipConn then NoclipConn:Disconnect() end
 end)
 
--- 2. INSTANT INTERACT (Giữ nguyên cấu trúc v1.9 gốc)
 local InstantEnabled = false
 local IntConn
 CreateToggle("Instant Interact", function(s)
@@ -90,13 +88,11 @@ CreateToggle("Instant Interact", function(s)
     elseif IntConn then IntConn:Disconnect() end
 end)
 
--- 3. SUPER JUMP (Giữ nguyên cấu trúc v1.9 gốc)
 CreateToggle("Super Jump", function(s)
     local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if h then h.JumpPower = s and 100 or 50 end
 end)
 
--- 4. WALK SPEED INPUT (Giữ nguyên cấu trúc v1.9 gốc)
 local SpeedFrame = Instance.new("Frame", Container); SpeedFrame.Size = UDim2.new(1, -10, 0, 50); SpeedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 Instance.new("UICorner", SpeedFrame).CornerRadius = UDim.new(0, 8)
 local SpeedLbl = Instance.new("TextLabel", SpeedFrame); SpeedLbl.Text = "WalkSpeed:"; SpeedLbl.Size = UDim2.new(0.5, 0, 1, 0); SpeedLbl.Position = UDim2.new(0, 12, 0, 0); SpeedLbl.BackgroundTransparency = 1; SpeedLbl.TextColor3 = Color3.new(1,1,1)
@@ -107,4 +103,46 @@ SpeedInput.FocusLost:Connect(function()
     if num and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = num
     end
+end)
+
+-- ==================== CHẾ ĐỘ ANIMAL HOSPITAL (NEW) ====================
+
+local function QuetVaKichHoat(tukhoa)
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            local ten = string.lower(obj.Parent.Name)
+            local hanhdong = string.lower(obj.ActionText)
+            local doituong = string.lower(obj.ObjectText)
+            
+            if string.find(ten, tukhoa) or string.find(hanhdong, tukhoa) or string.find(doituong, tukhoa) then
+                fireproximityprompt(obj)
+                return true
+            end
+        end
+    end
+    return false
+end
+
+CreateToggle("Auto Hospital Loop", function(state)
+    _G.HospitalLoop = state
+    task.spawn(function()
+        while _G.HospitalLoop do
+            -- Bước 1: Lấy mẫu bệnh phẩm (Sample / Take)
+            QuetVaKichHoat("sample") or QuetVaKichHoat("take")
+            task.wait(0.3)
+            
+            -- Bước 2: Phân tích DNA (Analyze / DNA)
+            QuetVaKichHoat("analyze") or QuetVaKichHoat("dna")
+            task.wait(0.3)
+            
+            -- Bước 3: Đưa dữ liệu vào máy tính (Computer / Input)
+            QuetVaKichHoat("computer") or QuetVaKichHoat("input")
+            task.wait(0.3)
+            
+            -- Bước 4: Lấy thuốc điều trị (Medicine / Cure / Get)
+            QuetVaKichHoat("medicine") or QuetVaKichHoat("cure")
+            
+            task.wait(0.5) -- Nghỉ một nhịp trước khi lặp lại vòng quét mới
+        end
+    end)
 end)
