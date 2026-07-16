@@ -1,39 +1,68 @@
 -- =================================================================
---         HIKAS v6.5 - BÁO CÁO QUA KHUNG CHAT
+--         HIKAS v6.6 - BẢNG QUÉT VẬT PHẨM (GUI)
 -- =================================================================
 
-local StarterGui = game:GetService("StarterGui")
+local CoreGui = game:GetService("CoreGui")
+local ScreenGui = Instance.new("ScreenGui", CoreGui:FindFirstChild("RobloxGui") or game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "HikasScanner"
 
-local function SendMessage(text)
-    StarterGui:SetCore("ChatMakeSystemMessage", {
-        Text = "[HIKAS] " .. text,
-        Color = Color3.fromRGB(255, 255, 0),
-        Font = Enum.Font.SourceSansBold,
-    })
-end
+-- Tạo khung bảng
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 250, 0, 300)
+Frame.Position = UDim2.new(0, 50, 0, 50)
+Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Frame.Active = true
+Frame.Draggable = true -- Bạn có thể kéo thả bảng này
 
-SendMessage("Đang bắt đầu quét... vui lòng đợi!")
+-- Tiêu đề
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "HIKAS SCANNER"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 
-local count = 0
-for _, obj in pairs(workspace:GetDescendants()) do
-    -- Kiểm tra 3 loại tương tác phổ biến nhất
-    if obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj:IsA("TouchInterest") then
-        count = count + 1
-        local parentName = obj.Parent and obj.Parent.Name or "Unknown"
-        local className = obj.ClassName
-        
-        -- In tên ra khung chat
-        SendMessage("Tìm thấy: " .. className .. " tại [" .. parentName .. "]")
-        
-        -- Thử "tự động bấm" nếu là ProximityPrompt
-        if obj:IsA("ProximityPrompt") and fireproximityprompt then
-            fireproximityprompt(obj)
+-- Danh sách kết quả
+local ScrollingFrame = Instance.new("ScrollingFrame", Frame)
+ScrollingFrame.Size = UDim2.new(1, 0, 1, -70)
+ScrollingFrame.Position = UDim2.new(0, 0, 0, 30)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 5, 0)
+local Layout = Instance.new("UIListLayout", ScrollingFrame)
+
+-- Nút Quét
+local Btn = Instance.new("TextButton", Frame)
+Btn.Size = UDim2.new(1, 0, 0, 40)
+Btn.Position = UDim2.new(0, 0, 1, -40)
+Btn.Text = "BẮT ĐẦU QUÉT"
+Btn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+
+Btn.MouseButton1Click:Connect(function()
+    -- Xóa cũ
+    for _, child in pairs(ScrollingFrame:GetChildren()) do
+        if child:IsA("TextLabel") then child:Destroy() end
+    end
+    
+    local count = 0
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") then
+            count = count + 1
+            
+            -- Hiện lên bảng
+            local Label = Instance.new("TextLabel", ScrollingFrame)
+            Label.Size = UDim2.new(1, -10, 0, 20)
+            Label.Text = obj.Parent.Name .. " (" .. obj.ClassName .. ")"
+            Label.TextSize = 12
+            Label.TextColor3 = Color3.new(1, 1, 1)
+            
+            -- Tự động kích hoạt (thử lấy thuốc)
+            if obj:IsA("ProximityPrompt") and fireproximityprompt then
+                fireproximityprompt(obj)
+            end
         end
     end
-end
-
-if count == 0 then
-    SendMessage("Không tìm thấy vật phẩm nào trong Workspace!")
-else
-    SendMessage("Quét xong! Đã tìm thấy " .. count .. " vật phẩm.")
-end
+    
+    if count == 0 then
+        local Label = Instance.new("TextLabel", ScrollingFrame)
+        Label.Size = UDim2.new(1, 0, 0, 20)
+        Label.Text = "Không tìm thấy gì!"
+    end
+end)
