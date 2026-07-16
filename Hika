@@ -1,5 +1,5 @@
 -- =================================================================
---         HIKAS - PHIÊN BẢN HỖ TRỢ BỆNH VIỆN THÚ CƯNG v3.5
+--         HIKAS - PHIÊN BẢN PHÂN TÁCH TAB HOÀN CHỈNH v4.0
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -8,19 +8,19 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
 
--- Hủy Menu cũ nếu có để tránh trùng lặp
+-- Hủy Menu cũ nếu có
 if game:GetService("CoreGui"):FindFirstChild("HikasMenu") then
     game:GetService("CoreGui").HikasMenu:Destroy()
 end
 
--- 1. TẠO GIAO DIỆN CHÍNH (Chuẩn v2.0)
+-- 1. KHUNG GIAO DIỆN CHÍNH (Đã rút gọn chiều cao xuống 420 cho cực kỳ gọn)
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 ScreenGui.Name = "HikasMenu"
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 330, 0, 520)
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -260)
+MainFrame.Size = UDim2.new(0, 330, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -210)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -28,19 +28,19 @@ MainFrame.ClipsDescendants = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 Instance.new("UIStroke", MainFrame).Thickness = 1.5; Instance.new("UIStroke", MainFrame).Color = Color3.fromRGB(35, 35, 45)
 
--- Thanh tiêu đề (Top Bar)
+-- Header tiêu đề
 local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Size = UDim2.new(1, 0, 0, 45); TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS v3.5 🏥"
+Title.Size = UDim2.new(1, -80, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.Text = "HIKAS v4.0 🏥"
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0.5, -15); CloseBtn.Text = "✕"; CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
 local MinimizeBtn = Instance.new("TextButton", TopBar)
 MinimizeBtn.Size = UDim2.new(0, 30, 0, 30); MinimizeBtn.Position = UDim2.new(1, -65, 0.5, -15); MinimizeBtn.Text = "−"; MinimizeBtn.BackgroundTransparency = 1; MinimizeBtn.TextColor3 = Color3.fromRGB(255, 200, 85)
 
--- Nút mở menu dạng tròn (Nhấp để thu phóng)
+-- Nút tròn mở lại Menu
 local OpenBtn = Instance.new("TextButton", ScreenGui)
 OpenBtn.Size = UDim2.new(0, 50, 0, 50); OpenBtn.Position = UDim2.new(0.05, 0, 0.15, 0); OpenBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 28); OpenBtn.Text = "H"; OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255); OpenBtn.Visible = false; OpenBtn.Draggable = true
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0); Instance.new("UIStroke", OpenBtn).Color = Color3.fromRGB(0, 136, 255)
@@ -49,26 +49,77 @@ MinimizeBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; Open
 OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; OpenBtn.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- Khung cuộn nội dung (Scrolling Container)
-local Container = Instance.new("ScrollingFrame", MainFrame)
-Container.Size = UDim2.new(1, -20, 1, -65); Container.Position = UDim2.new(0, 10, 0, 55); Container.BackgroundTransparency = 1; Container.CanvasSize = UDim2.new(0, 0, 0, 950)
-Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
+-- ==================== THANH PHÂN CHIA TAB (MỚI) ====================
+local TabFrame = Instance.new("Frame", MainFrame)
+TabFrame.Size = UDim2.new(1, -20, 0, 35)
+TabFrame.Position = UDim2.new(0, 10, 0, 55)
+TabFrame.BackgroundTransparency = 1
 
--- Hàm tạo Tiêu đề Phân khu (Section)
-local function CreateSection(text)
-    local Label = Instance.new("TextLabel", Container)
-    Label.Size = UDim2.new(1, -10, 0, 25)
-    Label.BackgroundTransparency = 1
-    Label.Text = "  " .. text
-    Label.TextColor3 = Color3.fromRGB(0, 136, 255)
-    Label.Font = Enum.Font.GothamBold
-    Label.TextSize = 13
-    Label.TextXAlignment = Enum.TextXAlignment.Left
+local Tab1 = Instance.new("TextButton", TabFrame)
+Tab1.Size = UDim2.new(0.5, -5, 1, 0)
+Tab1.Position = UDim2.new(0, 0, 0, 0)
+Tab1.BackgroundColor3 = Color3.fromRGB(35, 110, 240) -- Màu bật của Tab hiện tại
+Tab1.Text = "Cơ Bản ⚙️"
+Tab1.TextColor3 = Color3.new(1, 1, 1)
+Tab1.Font = Enum.Font.GothamBold
+Tab1.TextSize = 13
+Instance.new("UICorner", Tab1).CornerRadius = UDim.new(0, 6)
+
+local Tab2 = Instance.new("TextButton", TabFrame)
+Tab2.Size = UDim2.new(0.5, -5, 1, 0)
+Tab2.Position = UDim2.new(0.5, 5, 0, 0)
+Tab2.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+Tab2.Text = "Bệnh Viện 🏥"
+Tab2.TextColor3 = Color3.fromRGB(180, 180, 180)
+Tab2.Font = Enum.Font.GothamBold
+Tab2.TextSize = 13
+Instance.new("UICorner", Tab2).CornerRadius = UDim.new(0, 6)
+
+-- ==================== HAI KHUNG NỘI DUNG RIÊNG BIỆT ====================
+-- Khung Tab 1: Cơ Bản
+local BasicContainer = Instance.new("ScrollingFrame", MainFrame)
+BasicContainer.Size = UDim2.new(1, -20, 1, -110)
+BasicContainer.Position = UDim2.new(0, 10, 0, 100)
+BasicContainer.BackgroundTransparency = 1
+BasicContainer.CanvasSize = UDim2.new(0, 0, 0, 300)
+BasicContainer.ScrollBarThickness = 2
+local Layout1 = Instance.new("UIListLayout", BasicContainer); Layout1.Padding = UDim.new(0, 8)
+
+-- Khung Tab 2: Bệnh Viện
+local GameContainer = Instance.new("ScrollingFrame", MainFrame)
+GameContainer.Size = UDim2.new(1, -20, 1, -110)
+GameContainer.Position = UDim2.new(0, 10, 0, 100)
+GameContainer.BackgroundTransparency = 1
+GameContainer.CanvasSize = UDim2.new(0, 0, 0, 420)
+GameContainer.ScrollBarThickness = 2
+GameContainer.Visible = false -- Mặc định ẩn Tab bệnh viện đi
+local Layout2 = Instance.new("UIListLayout", GameContainer); Layout2.Padding = UDim.new(0, 8)
+
+-- Hàm chuyển đổi Tab mượt mà
+local function SwitchTab(tabIndex)
+    if tabIndex == 1 then
+        BasicContainer.Visible = true
+        GameContainer.Visible = false
+        Tab1.BackgroundColor3 = Color3.fromRGB(35, 110, 240)
+        Tab1.TextColor3 = Color3.new(1, 1, 1)
+        Tab2.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+        Tab2.TextColor3 = Color3.fromRGB(180, 180, 180)
+    else
+        BasicContainer.Visible = false
+        GameContainer.Visible = true
+        Tab1.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+        Tab1.TextColor3 = Color3.fromRGB(180, 180, 180)
+        Tab2.BackgroundColor3 = Color3.fromRGB(35, 110, 240)
+        Tab2.TextColor3 = Color3.new(1, 1, 1)
+    end
 end
 
--- Hàm tạo Nút Bật/Tắt (Toggle) tiếng Việt
-local function CreateToggle(name, callback)
-    local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+Tab1.MouseButton1Click:Connect(function() SwitchTab(1) end)
+Tab2.MouseButton1Click:Connect(function() SwitchTab(2) end)
+
+-- ==================== KHỞI TẠO CÁC NÚT TƯƠNG TÁC ====================
+local function CreateToggle(parent, name, callback)
+    local Frame = Instance.new("Frame", parent); Frame.Size = UDim2.new(1, -5, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
     local lbl = Instance.new("TextLabel", Frame); lbl.Size = UDim2.new(0.6, 0, 1, 0); lbl.Text = name; lbl.Position = UDim2.new(0, 12, 0, 0); lbl.BackgroundTransparency = 1; lbl.TextColor3 = Color3.fromRGB(220,220,220); lbl.TextXAlignment = Enum.TextXAlignment.Left; lbl.Font = Enum.Font.Gotham
     local Button = Instance.new("TextButton", Frame); Button.Size = UDim2.new(0.25, 0, 0.7, 0); Button.Position = UDim2.new(0.7, 0, 0.15, 0); Button.BackgroundColor3 = Color3.fromRGB(120, 120, 130); Button.Text = "TẮT"; Button.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6); Button.Font = Enum.Font.GothamBold
@@ -81,19 +132,17 @@ local function CreateToggle(name, callback)
     end)
 end
 
--- Hàm tạo Nút Nhấn (Button) để Dịch Chuyển
-local function CreateButton(name, callback)
-    local Frame = Instance.new("Frame", Container); Frame.Size = UDim2.new(1, -10, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+local function CreateButton(parent, name, callback)
+    local Frame = Instance.new("Frame", parent); Frame.Size = UDim2.new(1, -5, 0, 42); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    local Button = Instance.new("TextButton", Frame); Button.Size = UDim2.new(0.9, 0, 0.7, 0); Button.Position = UDim2.new(0.05, 0, 0.15, 0); Button.BackgroundColor3 = Color3.fromRGB(35, 110, 240); Button.Text = name; Button.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6); Button.Font = Enum.Font.GothamBold
+    local Button = Instance.new("TextButton", Frame); Button.Size = UDim2.new(0.92, 0, 0.75, 0); Button.Position = UDim2.new(0.04, 0, 0.125, 0); Button.BackgroundColor3 = Color3.fromRGB(35, 110, 240); Button.Text = name; Button.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6); Button.Font = Enum.Font.GothamBold
     Button.MouseButton1Click:Connect(callback)
 end
 
--- ==================== [1. NHÓM TÍNH NĂNG CHÍNH] ====================
-CreateSection("✦ TÍNH NĂNG NHÂN VẬT")
+-- ==================== [TAB 1: CƠ BẢN] ====================
 
 local NoclipConn
-CreateToggle("Đi Xuyên Tường", function(s) 
+CreateToggle(BasicContainer, "Đi Xuyên Tường", function(s) 
     if s then 
         NoclipConn = RunService.Stepped:Connect(function() 
             if LocalPlayer.Character then 
@@ -109,14 +158,14 @@ end)
 
 local IntConn
 local Debounce = false
-CreateToggle("Tương Tác Tức Thì (Mượt)", function(s)
+CreateToggle(BasicContainer, "Tương Tác Tức Thì", function(s)
     if s then
         for _,v in pairs(workspace:GetDescendants()) do if v:IsA("ProximityPrompt") then v.HoldDuration = 0 end end
         IntConn = workspace.DescendantAdded:Connect(function(v) 
             if v:IsA("ProximityPrompt") and not Debounce then
                 Debounce = true
                 v.HoldDuration = 0
-                task.wait(0.3) -- Nghỉ 0.3 giây chống lag CPU
+                task.wait(0.3) -- Giảm tải CPU tránh lag
                 Debounce = false
             end 
         end)
@@ -125,13 +174,13 @@ CreateToggle("Tương Tác Tức Thì (Mượt)", function(s)
     end
 end)
 
-CreateToggle("Siêu Nhảy", function(s)
+CreateToggle(BasicContainer, "Siêu Nhảy", function(s)
     local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if h then h.JumpPower = s and 100 or 50 end
 end)
 
--- Ô Nhập Tốc Độ
-local SpeedFrame = Instance.new("Frame", Container); SpeedFrame.Size = UDim2.new(1, -10, 0, 50); SpeedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+-- Ô thiết lập WalkSpeed
+local SpeedFrame = Instance.new("Frame", BasicContainer); SpeedFrame.Size = UDim2.new(1, -5, 0, 45); SpeedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 Instance.new("UICorner", SpeedFrame).CornerRadius = UDim.new(0, 8)
 local SpeedLbl = Instance.new("TextLabel", SpeedFrame); SpeedLbl.Text = " Tốc Độ Chạy:"; SpeedLbl.Size = UDim2.new(0.5, 0, 1, 0); SpeedLbl.Position = UDim2.new(0, 12, 0, 0); SpeedLbl.BackgroundTransparency = 1; SpeedLbl.TextColor3 = Color3.new(1,1,1); SpeedLbl.TextXAlignment = Enum.TextXAlignment.Left; SpeedLbl.Font = Enum.Font.Gotham
 local SpeedInput = Instance.new("TextBox", SpeedFrame); SpeedInput.Size = UDim2.new(0.25, 0, 0.7, 0); SpeedInput.Position = UDim2.new(0.7, 0, 0.15, 0); SpeedInput.BackgroundColor3 = Color3.fromRGB(40,40,50); SpeedInput.Text = "16"; SpeedInput.TextColor3 = Color3.new(1,1,1); SpeedInput.Font = Enum.Font.GothamBold
@@ -143,10 +192,10 @@ SpeedInput.FocusLost:Connect(function()
     end
 end)
 
--- ==================== [2. NHÓM BỔ TRỢ TRÁNH PHIỀN] ====================
-CreateSection("✦ TIỆN ÍCH PHỤ TRỢ")
 
--- Chống Treo máy (Anti-AFK)
+-- ==================== [TAB 2: BỆNH VIỆN] ====================
+
+-- Chống AFK
 local AntiAFKEnabled = false
 LocalPlayer.Idled:Connect(function()
     if AntiAFKEnabled then
@@ -155,20 +204,18 @@ LocalPlayer.Idled:Connect(function()
         VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
     end
 end)
-
-CreateToggle("Chống Treo Máy (Anti-AFK)", function(s)
+CreateToggle(GameContainer, "Chống Treo Máy (Anti-AFK)", function(s)
     AntiAFKEnabled = s
 end)
 
--- Vô hiệu hóa ghế tránh kẹt
+-- Vô hiệu hóa ghế tránh kẹt xe
 local SeatConn
 local function SetSeats(disabled)
     for _, v in pairs(workspace:GetDescendants()) do
         if v:IsA("Seat") or v:IsA("VehicleSeat") then v.Disabled = disabled end
     end
 end
-
-CreateToggle("Vô Hiệu Ghế (Không sợ kẹt)", function(s)
+CreateToggle(GameContainer, "Vô Hiệu Ghế (Chống Kẹt)", function(s)
     if s then
         SetSeats(true)
         SeatConn = workspace.DescendantAdded:Connect(function(v)
@@ -180,40 +227,71 @@ CreateToggle("Vô Hiệu Ghế (Không sợ kẹt)", function(s)
     end
 end)
 
--- ==================== [3. NHÓM DỊCH CHUYỂN NHANH] ====================
-CreateSection("✦ DỊCH CHUYỂN NHANH")
+-- Hệ thống lưu vị trí để lặp vòng xoay chuyển (Cycle System)
+local ReceptionCycle = { index = 1 }
+local MedicineCycle = { index = 1 }
+local DNACycle = { index = 1 }
 
--- Hàm tìm điểm dịch chuyển thông minh theo từ khóa
-local function TeleportToArea(keywords)
-    local found = false
-    for _, keyword in ipairs(keywords) do
-        for _, v in pairs(workspace:GetDescendants()) do
-            if v:IsA("BasePart") or v:IsA("Model") then
-                if string.find(v.Name:lower(), keyword:lower()) then
-                    local target = v:IsA("Model") and (v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")) or v
-                    if target and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        LocalPlayer.Character.HumanoidRootPart.CFrame = target.CFrame + Vector3.new(0, 3, 0)
-                        found = true
-                        break
+-- HÀM DỊCH CHUYỂN THÔNG MINH (Chống rơi map + Cho phép lặp vòng)
+local function TeleportToArea(keywords, cycleState)
+    local targets = {}
+    
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") or v:IsA("Model") then
+            -- Chỉ quét các vật thể cố định của map, bỏ qua Baseplate/Terrain để tránh rơi rớt
+            if not v:IsDescendantOf(LocalPlayer.Character) and v.Name ~= "Baseplate" and v.Name ~= "Terrain" then
+                for _, keyword in ipairs(keywords) do
+                    if string.find(v.Name:lower(), keyword:lower()) then
+                        local part = v:IsA("Model") and (v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")) or v
+                        if part then
+                            -- Lọc bớt các điểm quá gần nhau dưới 10 mét để lặp vòng chuẩn xác
+                            local isDuplicate = false
+                            for _, t in ipairs(targets) do
+                                if (t.Position - part.Position).Magnitude < 10 then
+                                    isDuplicate = true
+                                    break
+                                end
+                            end
+                            if not isDuplicate then
+                                table.insert(targets, part)
+                            end
+                        end
                     end
                 end
             end
         end
-        if found then break end
     end
-    if not found then
-        print("Hikas: Không tìm thấy vị trí phù hợp trong Map!")
+    
+    if #targets > 0 then
+        local index = cycleState.index or 1
+        if index > #targets then index = 1 end
+        
+        local target = targets[index]
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = LocalPlayer.Character.HumanoidRootPart
+            
+            -- CHỐNG RƠI MAP: Khóa vận tốc rơi tự do về 0
+            hrp.Velocity = Vector3.new(0, 0, 0)
+            -- CHỐNG KẸT SÀN: Teleport cao hẳn lên +5 studs so với tâm vật thể
+            hrp.CFrame = target.CFrame + Vector3.new(0, 5, 0)
+            
+            -- Xoay vòng mục tiêu cho lần nhấn tiếp theo
+            cycleState.index = (index % #targets) + 1
+        end
+    else
+        warn("Hikas: Không tìm thấy địa chỉ khớp với từ khóa!")
     end
 end
 
-CreateButton("👉 Đến Quầy Tiếp Nhận", function()
-    TeleportToArea({"reception", "desk", "register", "lobby", "spawn"})
+-- Đăng ký các nút dịch chuyển lặp vòng vào Tab Bệnh Viện
+CreateButton(GameContainer, "👉 Đến Tiếp Tân (Xoay vòng)", function()
+    TeleportToArea({"reception", "desk", "register", "lobby", "spawn", "nhan bệnh"}, ReceptionCycle)
 end)
 
-CreateButton("👉 Đến Tủ Thuốc", function()
-    TeleportToArea({"pharmacy", "medicine", "cabinet", "drug", "cure"})
+CreateButton(GameContainer, "👉 Đến Tủ Thuốc (Xoay vòng)", function()
+    TeleportToArea({"pharmacy", "medicine", "cabinet", "drug", "cure", "dispenser", "supply", "pill", "refill", "shelf", "med"}, MedicineCycle)
 end)
 
-CreateButton("👉 Đến Phòng Xét Nghiệm/DNA", function()
-    TeleportToArea({"lab", "dna", "analyze", "test", "machine"})
+CreateButton(GameContainer, "👉 Đến Máy DNA (Xoay vòng)", function()
+    TeleportToArea({"lab", "dna", "analyze", "test", "machine"}, DNACycle)
 end)
