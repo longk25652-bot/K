@@ -1,38 +1,39 @@
 -- =================================================================
---         HIKAS v6.4 - CÔNG CỤ DÒ TÌM VẬT PHẨM (DEBUG MODE)
+--         HIKAS v6.5 - BÁO CÁO QUA KHUNG CHAT
 -- =================================================================
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local CoreGui = game:GetService("CoreGui")
+local StarterGui = game:GetService("StarterGui")
 
--- Giao diện cơ bản để bấm nút
-local ScreenGui = Instance.new("ScreenGui", CoreGui:FindFirstChild("RobloxGui") or LocalPlayer:WaitForChild("PlayerGui"))
-local Btn = Instance.new("TextButton", ScreenGui)
-Btn.Size = UDim2.new(0, 200, 0, 50)
-Btn.Position = UDim2.new(0, 10, 0, 100)
-Btn.Text = "QUÉT TẤT CẢ VẬT PHẨM"
-Btn.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+local function SendMessage(text)
+    StarterGui:SetCore("ChatMakeSystemMessage", {
+        Text = "[HIKAS] " .. text,
+        Color = Color3.fromRGB(255, 255, 0),
+        Font = Enum.Font.SourceSansBold,
+    })
+end
 
-Btn.MouseButton1Click:Connect(function()
-    print("--- BẮT ĐẦU QUÉT VẬT PHẨM ---")
-    local count = 0
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("ProximityPrompt") then
-            count = count + 1
-            print("Tìm thấy vật phẩm số " .. count .. ":")
-            print(" - Tên cha (Parent): " .. (obj.Parent and obj.Parent.Name or "N/A"))
-            print(" - ActionText: " .. obj.ActionText)
-            print(" - ObjectText: " .. obj.ObjectText)
-            
-            -- Thử kích hoạt luôn xem có được không
-            if fireproximityprompt then
-                fireproximityprompt(obj)
-            end
+SendMessage("Đang bắt đầu quét... vui lòng đợi!")
+
+local count = 0
+for _, obj in pairs(workspace:GetDescendants()) do
+    -- Kiểm tra 3 loại tương tác phổ biến nhất
+    if obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") or obj:IsA("TouchInterest") then
+        count = count + 1
+        local parentName = obj.Parent and obj.Parent.Name or "Unknown"
+        local className = obj.ClassName
+        
+        -- In tên ra khung chat
+        SendMessage("Tìm thấy: " .. className .. " tại [" .. parentName .. "]")
+        
+        -- Thử "tự động bấm" nếu là ProximityPrompt
+        if obj:IsA("ProximityPrompt") and fireproximityprompt then
+            fireproximityprompt(obj)
         end
     end
-    print("--- QUÉT XONG " .. count .. " VẬT PHẨM ---")
-    Btn.Text = "ĐÃ QUÉT XONG ("..count..")"
-    task.wait(2)
-    Btn.Text = "QUÉT TẤT CẢ VẬT PHẨM"
-end)
+end
+
+if count == 0 then
+    SendMessage("Không tìm thấy vật phẩm nào trong Workspace!")
+else
+    SendMessage("Quét xong! Đã tìm thấy " .. count .. " vật phẩm.")
+end
