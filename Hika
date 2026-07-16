@@ -1,5 +1,5 @@
 -- =================================================================
---         HIKAS - BẢN CLASSIC SCROLL (CHUẨN HOẠT ĐỘNG 100%)
+--         HIKAS v6.3 - FIX LỖI TÊN VIỆT HÓA & LỖI THANH CUỘN
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -7,11 +7,9 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 
--- Dùng lại đúng đoạn code xác định GUI của bản đã hoạt động tốt
 local success, result = pcall(function() return CoreGui.Name end)
 local GuiParent = success and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
 
--- Xóa menu cũ nếu có
 if GuiParent:FindFirstChild("HikasMenu") then
     GuiParent.HikasMenu:Destroy()
 end
@@ -56,7 +54,7 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Text = "HIKAS (Tủ Thuốc Từ Xa)"
+Title.Text = "HIKAS v6.3 (Bản Hoàn Thiện)"
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 40, 1, 0)
@@ -80,13 +78,13 @@ MinimizeBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; Open
 OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; OpenBtn.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- Thanh cuộn (Scrolling Frame)
+-- Tăng CanvasSize lên 850 để dư một khoảng trống lớn bên dưới, chống lỗi nảy thanh cuộn
 local ScrollFrame = Instance.new("ScrollingFrame", MainFrame)
 ScrollFrame.Size = UDim2.new(1, -10, 1, -50)
 ScrollFrame.Position = UDim2.new(0, 5, 0, 45)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.ScrollBarThickness = 4
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 600)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 850)
 local UIListLayout = Instance.new("UIListLayout", ScrollFrame)
 UIListLayout.Padding = UDim.new(0, 8)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -117,11 +115,12 @@ local function CreateToggle(name, callback)
     end)
 end
 
-local function CreateFetchButton(displayName, keyword)
+-- HÀM MỚI: Nhận nhiều từ khóa cùng lúc (Việt + Anh + Tên lóng)
+local function CreateFetchButton(displayName, keywordsArray)
     local Btn = Instance.new("TextButton", ScrollFrame)
     Btn.Size = UDim2.new(1, -10, 0, 40)
     Btn.BackgroundColor3 = Color3.fromRGB(35, 110, 240)
-    Btn.Text = "💊 Lấy: " .. displayName
+    Btn.Text = "Lấy: " .. displayName
     Btn.TextColor3 = Color3.new(1,1,1)
     Btn.Font = Enum.Font.GothamBold
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
@@ -135,19 +134,30 @@ local function CreateFetchButton(displayName, keyword)
         
         for _, prompt in pairs(workspace:GetDescendants()) do
             if prompt:IsA("ProximityPrompt") then
-                local pName = prompt.Parent and prompt.Parent.Name:lower() or ""
-                local aText = prompt.ActionText:lower()
-                local oText = prompt.ObjectText:lower()
+                -- Chuyển tất cả về chữ thường để dễ so sánh
+                local pName = prompt.Parent and string.lower(prompt.Parent.Name) or ""
+                local aText = string.lower(prompt.ActionText)
+                local oText = string.lower(prompt.ObjectText)
                 
-                if pName:find(keyword:lower()) or aText:find(keyword:lower()) or oText:find(keyword:lower()) then
+                -- Quét qua danh sách các từ khóa
+                local isMatch = false
+                for _, kw in pairs(keywordsArray) do
+                    local lowerKw = string.lower(kw)
+                    if string.find(pName, lowerKw) or string.find(aText, lowerKw) or string.find(oText, lowerKw) then
+                        isMatch = true
+                        break
+                    end
+                end
+                
+                if isMatch then
                     if fireproximityprompt then
                         fireproximityprompt(prompt)
                     elseif hrp and prompt.Parent:IsA("BasePart") then
                         local oldCFrame = hrp.CFrame
                         hrp.CFrame = prompt.Parent.CFrame
-                        task.wait(0.15)
+                        task.wait(0.2) -- Tăng thời gian chờ lên một chút để server kịp nhận diện
                         prompt:InputHoldBegin()
-                        task.wait(0.15)
+                        task.wait(0.2)
                         prompt:InputHoldEnd()
                         hrp.CFrame = oldCFrame
                     end
@@ -167,23 +177,32 @@ local function CreateFetchButton(displayName, keyword)
         
         task.wait(1.5)
         Btn.BackgroundColor3 = Color3.fromRGB(35, 110, 240)
-        Btn.Text = "💊 Lấy: " .. displayName
+        Btn.Text = "Lấy: " .. displayName
     end)
 end
 
 -- ==================== CHÈN NÚT CHỨC NĂNG VÀO MENU ====================
 
-CreateTitle("🏥 TỦ THUỐC / VẬT PHẨM TỪ XA")
-CreateFetchButton("Thuốc Viên (Pills)", "pill")
-CreateFetchButton("Băng Gạc (Bandage)", "band")
-CreateFetchButton("Bộ Sơ Cứu (Medical Kit)", "kit")
-CreateFetchButton("Ống Tiêm (Syringe)", "syring")
-CreateFetchButton("Mẫu DNA (DNA Sample)", "dna")
-CreateFetchButton("Bình Oxy (Oxygen)", "oxy")
-CreateFetchButton("Kích Hoạt Máy Phân Tích", "analyzer")
-CreateFetchButton("Kích Hoạt Máy Tính", "computer")
+CreateTitle("🏥 TỦ THUỐC (TỰ ĐỘNG NHẬN DIỆN)")
+
+-- Dựa vào hình ảnh bạn gửi, mình ghép cả từ khóa tiếng Việt (không dấu + có dấu) và Tiếng Anh
+CreateFetchButton("Thuốc (Hũ xanh lá)", {"thuốc", "thuoc", "pill", "green"})
+CreateFetchButton("Bộ Sơ Cứu (Hộp đỏ)", {"sơ cứu", "so cuu", "kit", "red"})
+CreateFetchButton("Băng Gạc / Cá Nhân", {"băng", "bang", "gạc", "gac", "bandage", "plaster"})
+CreateFetchButton("Tuýp Kem (Hũ trắng)", {"tuýp", "tuyp", "kem", "ointment", "cream"})
+CreateFetchButton("Siro / Nước (Hũ cam/xanh)", {"siro", "nước", "nuoc", "syrup", "liquid", "orange", "blue"})
+CreateFetchButton("Mẫu DNA", {"dna", "mẫu", "mau"})
 
 CreateTitle("⚙️ TÍNH NĂNG CƠ BẢN")
+
+-- ĐƯA PHẦN CHỈNH TỐC ĐỘ LÊN ĐẦU TIÊN ĐỂ KHÔNG BỊ CHE KHI CUỘN
+local SpeedFrame = Instance.new("Frame", ScrollFrame); SpeedFrame.Size = UDim2.new(1, -10, 0, 40); SpeedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35); Instance.new("UICorner", SpeedFrame).CornerRadius = UDim.new(0, 6)
+local SpeedLbl = Instance.new("TextLabel", SpeedFrame); SpeedLbl.Size = UDim2.new(0.65, 0, 1, 0); SpeedLbl.Position = UDim2.new(0, 10, 0, 0); SpeedLbl.BackgroundTransparency = 1; SpeedLbl.TextColor3 = Color3.new(1,1,1); SpeedLbl.TextXAlignment = Enum.TextXAlignment.Left; SpeedLbl.Text = "Tốc Độ Chạy (Nhập số):"; SpeedLbl.Font = Enum.Font.Gotham
+local SpeedInput = Instance.new("TextBox", SpeedFrame); SpeedInput.Size = UDim2.new(0.25, 0, 0.7, 0); SpeedInput.Position = UDim2.new(0.7, 0, 0.15, 0); SpeedInput.BackgroundColor3 = Color3.fromRGB(50, 50, 60); SpeedInput.Text = "16"; SpeedInput.TextColor3 = Color3.new(1,1,1); SpeedInput.Font = Enum.Font.GothamBold; Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 4)
+SpeedInput.FocusLost:Connect(function()
+    local num = tonumber(SpeedInput.Text)
+    if num and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then LocalPlayer.Character.Humanoid.WalkSpeed = num end
+end)
 
 local NoclipConn
 CreateToggle("Đi Xuyên Tường", function(s) 
@@ -202,12 +221,4 @@ end)
 CreateToggle("Siêu Nhảy", function(s)
     local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if h then h.JumpPower = s and 100 or 50 end
-end)
-
-local SpeedFrame = Instance.new("Frame", ScrollFrame); SpeedFrame.Size = UDim2.new(1, -10, 0, 40); SpeedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35); Instance.new("UICorner", SpeedFrame).CornerRadius = UDim.new(0, 6)
-local SpeedLbl = Instance.new("TextLabel", SpeedFrame); SpeedLbl.Size = UDim2.new(0.65, 0, 1, 0); SpeedLbl.Position = UDim2.new(0, 10, 0, 0); SpeedLbl.BackgroundTransparency = 1; SpeedLbl.TextColor3 = Color3.new(1,1,1); SpeedLbl.TextXAlignment = Enum.TextXAlignment.Left; SpeedLbl.Text = "Tốc Độ Chạy:"; SpeedLbl.Font = Enum.Font.Gotham
-local SpeedInput = Instance.new("TextBox", SpeedFrame); SpeedInput.Size = UDim2.new(0.25, 0, 0.7, 0); SpeedInput.Position = UDim2.new(0.7, 0, 0.15, 0); SpeedInput.BackgroundColor3 = Color3.fromRGB(50, 50, 60); SpeedInput.Text = "16"; SpeedInput.TextColor3 = Color3.new(1,1,1); SpeedInput.Font = Enum.Font.GothamBold; Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 4)
-SpeedInput.FocusLost:Connect(function()
-    local num = tonumber(SpeedInput.Text)
-    if num and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then LocalPlayer.Character.Humanoid.WalkSpeed = num end
 end)
