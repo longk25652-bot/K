@@ -1,68 +1,108 @@
 -- =================================================================
---         HIKAS v6.6 - BẢNG QUÉT VẬT PHẨM (GUI)
+--         HIKAS v6.7 - TÍCH HỢP AUTO LẤY TẤT CẢ (ỔN ĐỊNH)
 -- =================================================================
 
-local CoreGui = game:GetService("CoreGui")
-local ScreenGui = Instance.new("ScreenGui", CoreGui:FindFirstChild("RobloxGui") or game.Players.LocalPlayer:WaitForChild("PlayerGui"))
-ScreenGui.Name = "HikasScanner"
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Tạo khung bảng
-local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 250, 0, 300)
-Frame.Position = UDim2.new(0, 50, 0, 50)
-Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Frame.Active = true
-Frame.Draggable = true -- Bạn có thể kéo thả bảng này
+-- Xóa menu cũ
+if PlayerGui:FindFirstChild("HikasMenu") then
+    PlayerGui.HikasMenu:Destroy()
+end
 
--- Tiêu đề
-local Title = Instance.new("TextLabel", Frame)
+-- TẠO MENU VÀO PLAYERGUI (Dùng PlayerGui để tránh bị chặn hiển thị)
+local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+ScreenGui.Name = "HikasMenu"
+ScreenGui.ResetOnSpawn = false
+
+-- Nút Mở Menu
+local OpenBtn = Instance.new("TextButton", ScreenGui)
+OpenBtn.Size = UDim2.new(0, 50, 0, 50)
+OpenBtn.Position = UDim2.new(0, 15, 0, 15)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+OpenBtn.Text = "H"
+OpenBtn.TextColor3 = Color3.fromRGB(0, 255, 127)
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.Visible = false
+OpenBtn.Draggable = true
+OpenBtn.Active = true
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0.5, 0)
+
+-- Khung chính
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 300, 0, 350)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -175)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+Instance.new("UIStroke", MainFrame).Color = Color3.fromRGB(50, 50, 60)
+
+-- Thanh cuộn (Tăng CanvasSize để chống trôi)
+local ScrollFrame = Instance.new("ScrollingFrame", MainFrame)
+ScrollFrame.Size = UDim2.new(1, -10, 1, -40)
+ScrollFrame.Position = UDim2.new(0, 5, 0, 35)
+ScrollFrame.BackgroundTransparency = 1
+ScrollFrame.ScrollBarThickness = 4
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 800) -- Rất dài để không bị che
+local UIListLayout = Instance.new("UIListLayout", ScrollFrame)
+UIListLayout.Padding = UDim.new(0, 10)
+
+-- HÀM TẠO NÚT (Fix lỗi click)
+local function CreateButton(text, color, callback)
+    local Btn = Instance.new("TextButton", ScrollFrame)
+    Btn.Size = UDim2.new(1, -10, 0, 40)
+    Btn.BackgroundColor3 = color
+    Btn.Text = text
+    Btn.TextColor3 = Color3.new(1,1,1)
+    Btn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+    Btn.MouseButton1Click:Connect(callback)
+    return Btn
+end
+
+-- TÍCH HỢP TÍNH NĂNG
+local Title = Instance.new("TextLabel", MainFrame)
 Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "HIKAS SCANNER"
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+Title.Text = "HIKAS v6.7 - BẢNG ĐIỀU KHIỂN"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.BackgroundTransparency = 1
 
--- Danh sách kết quả
-local ScrollingFrame = Instance.new("ScrollingFrame", Frame)
-ScrollingFrame.Size = UDim2.new(1, 0, 1, -70)
-ScrollingFrame.Position = UDim2.new(0, 0, 0, 30)
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 5, 0)
-local Layout = Instance.new("UIListLayout", ScrollingFrame)
-
--- Nút Quét
-local Btn = Instance.new("TextButton", Frame)
-Btn.Size = UDim2.new(1, 0, 0, 40)
-Btn.Position = UDim2.new(0, 0, 1, -40)
-Btn.Text = "BẮT ĐẦU QUÉT"
-Btn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-
-Btn.MouseButton1Click:Connect(function()
-    -- Xóa cũ
-    for _, child in pairs(ScrollingFrame:GetChildren()) do
-        if child:IsA("TextLabel") then child:Destroy() end
-    end
-    
-    local count = 0
+-- 1. NÚT LẤY TẤT CẢ (Sức mạnh của v6.6)
+CreateButton("💊 LẤY TẤT CẢ VẬT PHẨM (AUTO)", Color3.fromRGB(46, 204, 113), function()
     for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("ProximityPrompt") or obj:IsA("ClickDetector") then
-            count = count + 1
-            
-            -- Hiện lên bảng
-            local Label = Instance.new("TextLabel", ScrollingFrame)
-            Label.Size = UDim2.new(1, -10, 0, 20)
-            Label.Text = obj.Parent.Name .. " (" .. obj.ClassName .. ")"
-            Label.TextSize = 12
-            Label.TextColor3 = Color3.new(1, 1, 1)
-            
-            -- Tự động kích hoạt (thử lấy thuốc)
-            if obj:IsA("ProximityPrompt") and fireproximityprompt then
+        if obj:IsA("ProximityPrompt") then
+            if fireproximityprompt then
                 fireproximityprompt(obj)
             end
         end
     end
-    
-    if count == 0 then
-        local Label = Instance.new("TextLabel", ScrollingFrame)
-        Label.Size = UDim2.new(1, 0, 0, 20)
-        Label.Text = "Không tìm thấy gì!"
+end)
+
+-- 2. TỐC ĐỘ (Đưa lên trên)
+local SpeedFrame = Instance.new("Frame", ScrollFrame); SpeedFrame.Size = UDim2.new(1, -10, 0, 40); SpeedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+Instance.new("UICorner", SpeedFrame).CornerRadius = UDim.new(0, 6)
+local Input = Instance.new("TextBox", SpeedFrame); Input.Size = UDim2.new(1, 0, 1, 0); Input.BackgroundTransparency = 1; Input.Text = "Nhập Tốc Độ (16)"; Input.TextColor3 = Color3.new(1,1,1)
+Input.FocusLost:Connect(function()
+    local n = tonumber(Input.Text)
+    if n and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = n
     end
 end)
+
+-- 3. Nút Noclip
+CreateButton("Xuyên Tường (Noclip)", Color3.fromRGB(35, 110, 240), function()
+    RunService.Stepped:Connect(function()
+        if LocalPlayer.Character then
+            for _,p in pairs(LocalPlayer.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+        end
+    end)
+end)
+
+-- Nút thu nhỏ
+local Min = Instance.new("TextButton", MainFrame)
+Min.Size = UDim2.new(0, 30, 0, 30); Min.Position = UDim2.new(1, -30, 0, 0); Min.Text = "-"
+Min.MouseButton1Click:Connect(function() MainFrame.Visible = false; OpenBtn.Visible = true end)
+OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true; OpenBtn.Visible = false end)
